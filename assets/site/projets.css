@@ -1,0 +1,15 @@
+/* Section « Nos projets » (accueil) */
+.section_projets{position:relative}
+.grid-projets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.5rem}
+.card-projet{display:flex;flex-direction:column;background-color:var(--white);border-left:1rem solid var(--base-color-brand--violet-light);border-radius:8px;overflow:hidden;color:var(--base-color-brand--blue-dark);text-decoration:none;transition:border-color .4s ease}
+.card-projet:hover{border-left-color:var(--base-color-brand--violet)}
+.card-projet_image{display:flex;align-items:center;justify-content:center;height:13rem;background-color:var(--base-color-brand--grey-light);padding:1.5rem}
+.card-projet_image img{max-width:100%;max-height:100%;object-fit:contain}
+.card-projet_body{display:flex;flex-direction:column;gap:.75rem;padding:1.75rem 2rem 2rem;flex:1}
+.card-projet_body .p-all{flex:1}
+.card-projet .button{align-self:flex-start}
+@media (max-width:991px){.grid-projets{grid-template-columns:1fr 1fr}}
+@media (max-width:767px){.grid-projets{grid-template-columns:1fr}.card-projet_image{height:11rem}}
+/* Pied de page : liens vers les projets */
+.wrapper-footer-projets{display:flex;flex-direction:column;margin-top:1rem}
+.wrapper-footer-projets .p-footer-titre{color:var(--white);opacity:.6;text-transform:uppercase;font-size:.65rem;letter-spacing:.04em;margin-bottom:.25rem;align-self:stretch}
