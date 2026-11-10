@@ -82,9 +82,25 @@
 .plq-orgf input:focus{outline:2px solid var(--violet);outline-offset:1px;border-color:var(--violet)}
 .plq-err{color:var(--wrong);font-size:.88rem;margin:.4rem 0 0;min-height:1.2rem;width:100%}
 .plq-row{flex-direction:row}
-.plq-list li{padding-left:2.8rem}
-.plq-list li::before{content:none !important}
-.plq-list li img.ic{position:absolute;left:0;top:.75rem;width:1.9rem;height:auto}
+.plq-list li{padding-left:1.4rem}
+.plq-list li::before{content:"" !important;position:absolute;left:.15rem;top:1.35rem;width:.5rem;height:.5rem;border-radius:50%;background:var(--dot,#B42332)}
+.plq-list.k-loupe li,.plq-list.k-idee li{--dot:#C45A12}
+.plq-list.k-check li{--dot:#C2378F}
+.plq h3.plq-h{display:flex;align-items:center;gap:.6rem;margin:0 0 .3rem !important;color:var(--c,#B42332)}
+.plq-sec{--c:#B42332;--b:#FFDCDC;background:var(--b);border-radius:14px;padding:1.1rem 1.3rem .4rem;margin:0 0 1rem}
+.plq-sec.k-loupe,.plq-sec.k-idee{--c:#C45A12;--b:#FFE6D6}
+.plq-sec.k-check{--c:#C2378F;--b:#FFE3F6}
+.plq-sec .plq-list{margin:0}
+.plq-sec .plq-list li{border-bottom-color:rgba(47,43,58,.1)}
+.plq-sec .plq-list li:last-child{border-bottom:0}
+.plq-sec .plq-list li::before{background:var(--c) !important}
+.plq-stats{display:flex;gap:.6rem;margin:1.2rem 0 1.4rem;flex-wrap:wrap}
+.plq-stat{flex:1 1 9rem;border-radius:12px;padding:.8rem 1rem;background:var(--b);color:var(--c)}
+.plq-stat b{display:block;font-size:1.8rem;font-weight:500;line-height:1}
+.plq-stat span{display:block;font-size:.82rem;color:var(--muted);margin-top:.25rem;line-height:1.3}
+.plq-lvl{display:inline-flex;align-items:center;gap:.45rem;font-size:.85rem;font-weight:500;border-radius:999px;padding:.3rem .8rem;background:var(--b);color:var(--c);margin:0 0 .8rem}
+.plq-lvl::before{content:"";width:.5rem;height:.5rem;border-radius:50%;background:var(--c)}
+.plq h3.plq-h img{width:2rem;height:2rem;object-fit:contain;flex:none}
 .plq-org-name{font-size:1rem;color:var(--muted);margin:0 0 .2rem}
 .plq-dl .plq-orgf input{margin:0;max-width:none}
 .plq-dl .plq-err{margin:.6rem 0 0}
@@ -225,9 +241,10 @@ function result(){
   else if(missLaw<=2){t="Quelques obligations à compléter";m="Votre dispositif a des manques sur des points prévus par la loi. Ils sont souvent rapides à corriger, et c'est sur eux que la responsabilité de l'employeur peut être recherchée."}
   else{t="Votre organisation est exposée";m="Plusieurs obligations légales ne sont pas remplies, ou vous n'êtes pas sûr·e qu'elles le soient. Faire le point rapidement permet de protéger vos équipes et de sécuriser l'entreprise."}
   R={t:t,m:m,law:law,lawOk:lawOk,todo:todo,check:check,bp:bp,ok:okL,size:SIZES[sizeK][0]};
-  function li(it,show,ic){return '<li><img class="ic" src="assets/site/pl-'+ic+'.webp" alt="" width="60" height="60"><span class="t">'+esc(it.lbl)+'</span>'+(show?'<span class="d">'+esc(it.todo)+'</span>':'')+'<span class="s">'+(it.law?'Obligation légale':'Bonne pratique')+' · '+esc(it.src)+'</span></li>'}
-  function block(title,arr,show,ic){return arr.length?'<h3>'+title+' ('+arr.length+')</h3><ul class="plq-list'+(ic==='check'?' ok':'')+'">'+arr.map(function(it){return li(it,show,ic)}).join('')+'</ul>':''}
-  $('plq-res').innerHTML='<span class="plq-tag">Votre diagnostic</span><p class="plq-score">'+lawOk+'<small> / '+law+' obligations légales remplies</small></p><h2>'+t+'</h2><p class="plq-lead">'+m+'</p>'+
+  function li(it,show){return '<li><span class="t">'+esc(it.lbl)+'</span>'+(show?'<span class="d">'+esc(it.todo)+'</span>':'')+'<span class="s">'+(it.law?'Obligation légale':'Bonne pratique')+' · '+esc(it.src)+'</span></li>'}
+  function block(title,arr,show,ic){return arr.length?'<div class="plq-sec k-'+ic+'"><h3 class="plq-h"><img src="assets/site/pl-'+ic+'.webp" alt="" width="60" height="60">'+title+' ('+arr.length+')</h3><ul class="plq-list k-'+ic+(ic==='check'?' ok':'')+'">'+arr.map(function(it){return li(it,show)}).join('')+'</ul></div>':''}
+  $('plq-res').innerHTML='<span class="plq-tag">Votre diagnostic</span><p class="plq-score">'+lawOk+'<small> / '+law+' obligations légales remplies</small></p>'+(function(){var x=law-lawOk,c=x===0?['#C2378F','#FFE3F6','Conforme']:(x<=2?['#C45A12','#FFE6D6','À consolider']:['#B42332','#FFDCDC','Exposé']);return '<span class="plq-lvl" style="--c:'+c[0]+';--b:'+c[1]+'">Niveau de conformité : '+c[2]+'</span>'})()+'<h2>'+t+'</h2><p class="plq-lead">'+m+'</p>'+
+   '<div class="plq-stats"><div class="plq-stat" style="--c:#B42332;--b:#FFDCDC"><b>'+todo.length+'</b><span>obligations légales non conformes</span></div><div class="plq-stat" style="--c:#C45A12;--b:#FFE6D6"><b>'+(check.length+bp.length)+'</b><span>points à vérifier ou à renforcer</span></div><div class="plq-stat" style="--c:#C2378F;--b:#FFE3F6"><b>'+okL.length+'</b><span>points maîtrisés</span></div></div>'+
    '<div class="plq-actions"><a class="plq-btn" href="/contact">Être accompagné par Purple Lab <span aria-hidden="true">→</span></a><a class="plq-btn is-ghost" href="/formations-et-sensibilisations">Nos formations</a><button type="button" class="plq-btn is-ghost" id="plq-again">Refaire le diagnostic</button></div>'+
    '<div class="plq-dl"><h3>Votre bilan Purple Lab à télécharger</h3><p>Un document PDF avec le plan d\'action et votre bilan, à partager avec votre direction, vos RH ou votre CSE.</p><label for="plq-org">Nom de l\'entreprise ou de la structure (obligatoire)</label><div class="plq-orgf"><input id="plq-org" type="text" autocomplete="organization" maxlength="80" placeholder="Ex. : Société Dupont" value="'+esc(org)+'"><button type="button" class="plq-btn" id="plq-pdf-btn">Télécharger mon bilan (PDF) <span aria-hidden="true">↓</span></button></div><p class="plq-err" id="plq-err" role="alert"></p></div>'+
    block('Obligations légales à mettre en place',todo,true,'croix')+block('Obligations à vérifier',check,true,'loupe')+block('Bonnes pratiques à renforcer',bp,true,'idee')+block('Déjà en place',okL,false,'check')+
