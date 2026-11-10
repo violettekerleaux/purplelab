@@ -59,23 +59,56 @@
 .plq-list .t{display:block;font-weight:500;color:var(--navy)}
 .plq-list .d{display:block;color:var(--ink);margin-top:.2rem}
 .plq-list .s{display:block;color:var(--muted);font-size:.84rem;margin-top:.2rem}
+.plq-hero{display:grid;grid-template-columns:1.25fr 1fr;gap:2.5rem;align-items:center}
+.plq-hero img{width:100%;height:auto;display:block}
+.plq-intro-wide{max-width:64rem}
+#plq.is-intro{max-width:64rem}
+.plq-step{transition:opacity .28s ease,transform .28s ease}
+.plq-step.is-out{opacity:0;transform:translateX(-14px)}
+.plq-step.is-in{opacity:0;transform:translateX(14px)}
+.plq-opt.is-picked,.plq-opt.is-picked:hover:not([disabled]){border-color:var(--violet);background:var(--violet);color:#fff}
+.plq [hidden]{display:none !important}
+.plq-saved{font-size:.85rem;color:var(--violet);font-weight:500;min-height:1.3rem;margin:0 0 .6rem}
+.plq-dl{background:#fff;border:1px solid var(--lilac);border-radius:12px;padding:1.4rem 1.5rem;margin:0 0 2rem}
+.plq-dl h3{margin:0 0 .4rem !important}
+.plq-dl p{margin:0 0 1rem;font-size:.95rem}
+.plq-dl label{display:block;font-size:.85rem;color:var(--muted);margin:0 0 .3rem}
+.plq-dl input{font:400 1rem Inter,sans-serif;width:100%;max-width:24rem;padding:.7rem .9rem;border:1px solid var(--line);border-radius:8px;margin:0 0 1rem;background:#fff;color:var(--ink)}
+.plq-law{border:1px solid var(--lilac);border-radius:12px;padding:1.1rem 1.3rem;margin:2rem 0 0;font-size:.92rem}
+.plq-law b{font-weight:500;color:var(--violet)}
+@media (max-width:767px){.plq-hero{grid-template-columns:1fr;gap:1.5rem}.plq-hero figure{order:-1;max-width:18rem;margin:0 auto}}
+.plq-orgf{display:flex;gap:.6rem;flex-wrap:wrap;width:100%}
+.plq-orgf input{flex:1 1 16rem;font:400 1.05rem Inter,sans-serif;padding:.9rem 1.1rem;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.plq-orgf input:focus{outline:2px solid var(--violet);outline-offset:1px;border-color:var(--violet)}
+.plq-err{color:var(--wrong);font-size:.88rem;margin:.4rem 0 0;min-height:1.2rem;width:100%}
+.plq-row{flex-direction:row}
+.plq-list li{padding-left:2.8rem}
+.plq-list li::before{content:none !important}
+.plq-list li img.ic{position:absolute;left:0;top:.75rem;width:1.9rem;height:auto}
+.plq-org-name{font-size:1rem;color:var(--muted);margin:0 0 .2rem}
+.plq-dl .plq-orgf input{margin:0;max-width:none}
+.plq-dl .plq-err{margin:.6rem 0 0}
+.plq-org-name b{color:var(--navy);font-weight:500}
 .plq-res h3{font-weight:500;font-size:1.05rem;color:var(--navy);margin:2rem 0 .4rem}
 </style>
-<div class="plq" id="plq">
-  <div id="plq-intro">
+<div class="plq is-intro" id="plq">
+  <div id="plq-intro" class="plq-hero"><div>
     <span class="plq-tag">Autodiagnostic</span>
-    <h1>Harcèlement au travail : votre entreprise est-elle en règle&nbsp;?</h1>
-    <p class="plq-lead">Référent, procédure de signalement, document unique, règlement intérieur… En quelques questions, vérifiez si votre organisation respecte ses obligations légales de prévention du harcèlement moral, du harcèlement sexuel et des agissements sexistes.</p>
-    <p class="plq-meta">Environ 3 minutes · chaque point renvoie à son article de loi · aucune donnée n'est enregistrée</p>
+    <h1>Violences au travail : votre entreprise est-elle en règle&nbsp;?</h1>
+    <p class="plq-lead">Harcèlement moral et sexuel, agissements sexistes, discriminations : référent, procédure de signalement, document unique, égalité femmes-hommes… En quelques questions, vérifiez si votre organisation respecte ses obligations légales de prévention.</p>
+    <p class="plq-meta">Environ 4 minutes · chaque point renvoie à son article de loi · aucune donnée n'est enregistrée</p>
     <button class="plq-btn" type="button" id="plq-start">Commencer le diagnostic <span aria-hidden="true">→</span></button>
-  </div>
+  </div><figure style="margin:0"><picture><source srcset="assets/site/PurpleLab-diagnostic-illustration.webp" type="image/webp"><img src="assets/site/PurpleLab-diagnostic-illustration.png" width="900" height="789" alt="Illustration : une femme examine à la loupe un immeuble de bureaux posé dans sa main"></picture></figure></div>
   <div id="plq-game" hidden>
     <div class="plq-bar" aria-hidden="true"><span id="plq-bar"></span></div>
+    <div class="plq-step" id="plq-step">
     <p class="plq-count" id="plq-count"></p>
     <div id="plq-kind"></div>
     <h2 class="plq-q" id="plq-q" tabindex="-1"></h2>
     <div class="plq-row" id="plq-opts"></div>
+    <p class="plq-saved" id="plq-saved" aria-live="polite"></p>
     <p class="plq-why" id="plq-why"></p>
+    </div>
     <button type="button" class="plq-back" id="plq-back">← Question précédente</button>
   </div>
   <div id="plq-res" class="plq-res" hidden></div>
@@ -83,59 +116,79 @@
 </div>
 <script>
 (function(){
-var SIZES=[["Moins de 11 salariés",0],["11 à 49 salariés",11],["50 à 249 salariés",50],["250 salariés et plus",250]];
+var SIZES=[["Moins de 11 salariés",0],["11 à 49 salariés",11],["50 à 249 salariés",50],["250 à 299 salariés",250],["300 salariés et plus",300]];
 var Q=[
-{min:0,law:1,q:"Les risques de harcèlement moral, de harcèlement sexuel et d'agissements sexistes figurent-ils dans votre document unique d'évaluation des risques (DUERP) ?",
+{lbl:"Risques de harcèlement et d'agissements sexistes intégrés au DUERP",min:0,law:1,q:"Les risques de harcèlement moral, de harcèlement sexuel et d'agissements sexistes figurent-ils dans votre document unique d'évaluation des risques (DUERP) ?",
  why:"L'employeur évalue les risques et les transcrit dans le document unique. La planification de la prévention doit intégrer expressément ces trois risques.",
  todo:"Ajouter ces risques à votre DUERP, avec les mesures de prévention associées.",
  src:"Code du travail, art. L4121-2 (7°), L4121-3 et R4121-1"},
-{min:0,law:1,q:"Avez-vous mis en place des actions concrètes de prévention du harcèlement (information, formation, organisation du travail) ?",
+{lbl:'Actions de prévention en place (information, formation, organisation)',min:0,law:1,q:"Avez-vous mis en place des actions concrètes de prévention du harcèlement (information, formation, organisation du travail) ?",
  why:"L'employeur doit prendre toutes dispositions nécessaires pour prévenir le harcèlement moral et sexuel, et protéger la santé physique et mentale des salariés.",
  todo:"Définir un plan d'actions de prévention : sensibilisation des équipes, formation, organisation adaptée.",
  src:"Code du travail, art. L4121-1, L1152-4 et L1153-5"},
-{min:0,law:1,q:"Vos salariés sont-ils informés, par affichage ou par un autre moyen, des textes pénaux sur le harcèlement, des recours possibles et des coordonnées des services compétents ?",
+{lbl:'Salariés informés des textes pénaux, des recours et des contacts utiles',min:0,law:1,q:"Vos salariés sont-ils informés, par affichage ou par un autre moyen, des textes pénaux sur le harcèlement, des recours possibles et des coordonnées des services compétents ?",
  why:"L'employeur informe les salariés, sur le lieu de travail et dans les locaux où se fait l'embauche, du texte de l'article 222-33 du Code pénal, des actions civiles et pénales ouvertes et des coordonnées des autorités et services compétents. Il informe aussi du texte de l'article 222-33-2 sur le harcèlement moral.",
  todo:"Afficher ou diffuser ces informations (articles 222-33 et 222-33-2 du Code pénal, recours, contacts utiles).",
  src:"Code du travail, art. L1153-5 et L1152-4"},
-{min:50,law:1,q:"Votre règlement intérieur rappelle-t-il les dispositions sur le harcèlement moral, le harcèlement sexuel et les agissements sexistes ?",
+{lbl:'Règlement intérieur à jour sur le harcèlement et les agissements sexistes',min:50,law:1,q:"Votre règlement intérieur rappelle-t-il les dispositions sur le harcèlement moral, le harcèlement sexuel et les agissements sexistes ?",
  why:"Le règlement intérieur est obligatoire à partir de 50 salariés. Il doit rappeler les règles sur les harcèlements moral et sexuel et sur les agissements sexistes.",
  todo:"Mettre à jour votre règlement intérieur avec ces dispositions.",
  src:"Code du travail, art. L1311-2 et L1321-2 (2°)"},
-{min:250,law:1,q:"Avez-vous désigné un référent chargé d'orienter, d'informer et d'accompagner les salariés en matière de harcèlement sexuel et d'agissements sexistes ?",
+{lbl:"Référent harcèlement sexuel désigné par l'employeur",min:250,law:1,q:"Avez-vous désigné un référent chargé d'orienter, d'informer et d'accompagner les salariés en matière de harcèlement sexuel et d'agissements sexistes ?",
  why:"Toute entreprise d'au moins 250 salariés doit désigner ce référent, en plus du référent du CSE.",
  todo:"Désigner un référent employeur et faire connaître ses coordonnées.",
  src:"Code du travail, art. L1153-5-1"},
-{min:11,law:1,q:"Votre CSE a-t-il désigné, parmi ses membres, un référent harcèlement sexuel et agissements sexistes ?",
+{lbl:'Référent harcèlement sexuel désigné par le CSE',min:11,law:1,q:"Votre CSE a-t-il désigné, parmi ses membres, un référent harcèlement sexuel et agissements sexistes ?",
  why:"Le CSE est obligatoire à partir de 11 salariés. Il désigne parmi ses membres un référent en matière de lutte contre le harcèlement sexuel et les agissements sexistes.",
  todo:"Faire désigner un référent par le CSE, par une résolution, pour la durée du mandat.",
  src:"Code du travail, art. L2311-2 et L2314-1"},
-{min:50,law:1,q:"Disposez-vous d'une procédure interne de recueil et de traitement des signalements (dispositif d'alerte) ?",
+{lbl:'Procédure interne de recueil et de traitement des signalements',min:50,law:1,q:"Disposez-vous d'une procédure interne de recueil et de traitement des signalements (dispositif d'alerte) ?",
  why:"Les entreprises d'au moins 50 salariés sont tenues d'établir une procédure interne de recueil et de traitement des signalements.",
  todo:"Mettre en place et diffuser une procédure de signalement écrite.",
- src:"Loi n° 2016-1691 du 9 décembre 2016 (Sapin II), art. 8, modifiée par la loi n° 2022-401"},
-{min:0,law:0,q:"Chaque salarié sait-il concrètement à qui s'adresser et comment signaler une situation de harcèlement ?",
+ src:"Loi Sapin II (n° 2016-1691), art. 8, modifiée par la loi n° 2022-401"},
+{lbl:'Circuit de signalement connu de tous les salariés',min:0,law:0,q:"Chaque salarié sait-il concrètement à qui s'adresser et comment signaler une situation de harcèlement ?",
  why:"Pour mettre un terme aux faits, l'employeur doit d'abord en avoir connaissance. Un circuit de signalement clair et connu de tous en est la condition.",
  todo:"Rédiger et diffuser un circuit de signalement simple : interlocuteurs, canaux, confidentialité.",
  src:"Découle de l'obligation de prévention, Code du travail, art. L1153-5 et L1152-4"},
-{min:0,law:0,q:"Savez-vous comment mener une enquête interne lorsqu'un signalement arrive (qui enquête, dans quels délais, comment auditionner) ?",
+{lbl:"Méthode d'enquête interne prête",min:0,law:0,q:"Savez-vous comment mener une enquête interne lorsqu'un signalement arrive (qui enquête, dans quels délais, comment auditionner) ?",
  why:"L'employeur doit mettre un terme aux faits de harcèlement et les sanctionner. Une enquête menée rapidement et de manière impartiale lui permet d'établir les faits.",
  todo:"Préparer une méthode d'enquête interne, ou identifier un tiers indépendant pour la mener.",
  src:"Découle du Code du travail, art. L1153-5"},
-{min:0,law:1,q:"Lorsque des faits sont établis, prenez-vous des mesures pour les faire cesser et sanctionner leur auteur ?",
+{lbl:'Mesures pour faire cesser les faits et sanctionner les auteurs',min:0,law:1,q:"Lorsque des faits sont établis, prenez-vous des mesures pour les faire cesser et sanctionner leur auteur ?",
  why:"L'employeur doit mettre un terme au harcèlement sexuel et le sanctionner. Tout salarié auteur de harcèlement moral ou sexuel est passible d'une sanction disciplinaire.",
  todo:"Prévoir dans votre procédure les mesures de protection immédiates et l'échelle des sanctions.",
  src:"Code du travail, art. L1153-5, L1152-5 et L1153-6"},
-{min:0,law:1,q:"Les victimes et les témoins de bonne foi sont-ils protégés contre toute mesure de représailles ?",
+{lbl:'Protection des victimes et des témoins contre les représailles',min:0,law:1,q:"Les victimes et les témoins de bonne foi sont-ils protégés contre toute mesure de représailles ?",
  why:"Aucune personne ne peut être sanctionnée, licenciée ou discriminée pour avoir subi ou refusé de subir un harcèlement, ou pour en avoir témoigné de bonne foi.",
  todo:"Inscrire cette protection dans votre procédure et en informer les managers.",
  src:"Code du travail, art. L1152-2 et L1153-2"},
-{min:0,law:0,q:"Vos managers et vos équipes RH ont-ils été formés à repérer et à traiter les situations de harcèlement ?",
+{lbl:'Salariés et candidats informés des textes sur les discriminations',min:0,law:1,q:"Les salariés et les candidats à l'embauche sont-ils informés, par affichage ou par un autre moyen, des textes du Code pénal qui interdisent les discriminations ?",
+ why:"Sur les lieux de travail et dans les locaux où se fait l'embauche, les personnes doivent être informées par tout moyen du texte des articles 225-1 à 225-4 du Code pénal, qui définissent et sanctionnent les discriminations.",
+ todo:"Afficher ou diffuser les articles 225-1 à 225-4 du Code pénal sur les lieux de travail et de recrutement.",
+ src:"Code du travail, art. L1142-6"},
+{lbl:"Indicateurs d'égalité femmes-hommes publiés chaque année",min:50,law:1,q:"Publiez-vous chaque année les indicateurs sur les écarts de rémunération entre les femmes et les hommes (index de l'égalité professionnelle) ?",
+ why:"Dans les entreprises d'au moins 50 salariés, l'employeur publie chaque année les indicateurs relatifs aux écarts de rémunération entre les femmes et les hommes, ainsi que les actions mises en œuvre pour les supprimer.",
+ todo:"Calculer et publier chaque année l'index de l'égalité professionnelle, avec les mesures de correction si nécessaire.",
+ src:"Code du travail, art. L1142-8"},
+{lbl:'Référent handicap désigné',min:250,law:1,q:"Avez-vous désigné un référent handicap chargé d'orienter, d'informer et d'accompagner les personnes en situation de handicap ?",
+ why:"Dans toute entreprise d'au moins 250 salariés, un référent est désigné pour orienter, informer et accompagner les personnes en situation de handicap.",
+ todo:"Désigner un référent handicap et faire connaître son nom et son rôle aux salariés.",
+ src:"Code du travail, art. L5213-6-1"},
+{lbl:'Recruteurs formés à la non-discrimination',min:300,law:1,q:"Les personnes chargées du recrutement ont-elles suivi une formation à la non-discrimination à l'embauche au cours des 5 dernières années ?",
+ why:"Dans les entreprises d'au moins 300 salariés et dans toutes les entreprises spécialisées dans le recrutement, les salariés chargés du recrutement reçoivent une formation à la non-discrimination à l'embauche au moins une fois tous les cinq ans.",
+ todo:"Former les personnes chargées du recrutement à la non-discrimination à l'embauche, au moins tous les 5 ans.",
+ src:"Code du travail, art. L1131-2"},
+{lbl:'Recrutements, salaires et promotions fondés sur des critères objectifs',min:0,law:0,q:"Vos décisions de recrutement, de rémunération et de promotion reposent-elles sur des critères écrits et objectifs ?",
+ why:"Personne ne peut être écarté d'un recrutement ni subir une mesure discriminatoire, notamment en matière de rémunération, de formation ou de promotion, pour l'un des motifs prévus par la loi. Des critères écrits permettent de le démontrer.",
+ todo:"Formaliser des critères objectifs pour le recrutement, la rémunération et la promotion, et les partager avec les managers.",
+ src:"Découle de l'interdiction des discriminations, Code du travail, art. L1132-1"},
+{lbl:'Managers et RH formés au repérage et au traitement',min:0,law:0,q:"Vos managers et vos équipes RH ont-ils été formés à repérer et à traiter les situations de harcèlement ?",
  why:"L'obligation de sécurité de l'employeur comprend des actions d'information et de formation. Les managers sont souvent les premiers à recevoir une alerte.",
  todo:"Former les managers et les RH au repérage, à l'écoute et au traitement des situations.",
  src:"Code du travail, art. L4121-1 (2°)"}
 ];
 var $=function(id){return document.getElementById(id)};
-var size=null,list=[],i=0,ans=[];
+var org='',size=null,sizeK=null,list=[],i=0,ans=[];
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function top(){var r=$('plq').getBoundingClientRect();if(r.top<110)window.scrollBy({top:r.top-120,behavior:'smooth'})}
 function total(){return size===null?Q.length+1:list.length+1}
@@ -154,33 +207,96 @@ function render(){
     $('plq-count').textContent='Question '+(i+1)+' sur '+list.length;
     $('plq-kind').innerHTML=it.law?'<span class="plq-kind">Obligation légale</span>':'<span class="plq-kind bp">Bonne pratique attendue</span>';
     $('plq-q').textContent=it.q;
-    $('plq-opts').innerHTML=['Oui','Non','Je ne sais pas'].map(function(t,k){return '<button type="button" class="plq-opt'+(ans[i]===k?' is-right':'')+'" data-a="'+k+'">'+t+'</button>'}).join('');
+    $('plq-opts').innerHTML=['Oui','Non','Je ne sais pas'].map(function(t,k){return '<button type="button" class="plq-opt'+(ans[i]===k?' is-picked':'')+'" data-a="'+k+'">'+t+'</button>'}).join('');
     $('plq-why').innerHTML='<b>Pourquoi</b> · '+esc(it.why)+'<br><b>Source</b> · '+esc(it.src);
   }
+  $('plq-saved').textContent='';
   $('plq-q').focus({preventScroll:true});top();
 }
+var LAWTXT="La proposition de « loi intégrale » contre les violences sexistes et sexuelles a été adoptée en première lecture par l'Assemblée nationale le 13 octobre 2026. Elle doit encore être examinée par le Sénat et n'est donc pas en vigueur. Dans sa version actuelle, elle prévoit notamment un référent harcèlement et violences sexistes et sexuelles dès 50 salariés, une enquête interne obligatoire après tout signalement, et un congé de 10 jours pour les salariées et salariés victimes.";
+var R=null;
 function result(){
   $('plq-game').hidden=true;
-  var okL=[],miss=[],law=0,lawOk=0;
-  list.forEach(function(it,k){if(it.law)law++;if(ans[k]===0){okL.push(it);if(it.law)lawOk++}else miss.push(it)});
+  var okL=[],todo=[],check=[],bp=[],law=0,lawOk=0;
+  list.forEach(function(it,k){if(it.law)law++;if(ans[k]===0){okL.push(it);if(it.law)lawOk++}else if(!it.law)bp.push(it);else if(ans[k]===2)check.push(it);else todo.push(it)});
   var missLaw=law-lawOk,t,m;
-  if(missLaw===0&&miss.length===0){t="Votre socle de prévention est en place";m="Vous répondez à toutes les obligations listées. L'enjeu est maintenant de les faire vivre : des procédures connues, des managers formés, des enquêtes menées sans délai."}
+  if(missLaw===0&&bp.length===0){t="Votre socle de prévention est en place";m="Vous répondez à toutes les obligations listées. L'enjeu est maintenant de les faire vivre : des procédures connues, des managers formés, des enquêtes menées sans délai."}
   else if(missLaw===0){t="Vos obligations légales sont couvertes";m="Il reste quelques bonnes pratiques à consolider pour que le dispositif fonctionne vraiment le jour où une situation se présente."}
   else if(missLaw<=2){t="Quelques obligations à compléter";m="Votre dispositif a des manques sur des points prévus par la loi. Ils sont souvent rapides à corriger, et c'est sur eux que la responsabilité de l'employeur peut être recherchée."}
   else{t="Votre organisation est exposée";m="Plusieurs obligations légales ne sont pas remplies, ou vous n'êtes pas sûr·e qu'elles le soient. Faire le point rapidement permet de protéger vos équipes et de sécuriser l'entreprise."}
-  function li(it,show){return '<li><span class="t">'+esc(it.q)+'</span>'+(show?'<span class="d">'+esc(it.todo)+'</span>':'')+'<span class="s">'+(it.law?'Obligation légale':'Bonne pratique')+' · '+esc(it.src)+'</span></li>'}
+  R={t:t,m:m,law:law,lawOk:lawOk,todo:todo,check:check,bp:bp,ok:okL,size:SIZES[sizeK][0]};
+  function li(it,show,ic){return '<li><img class="ic" src="assets/site/pl-'+ic+'.webp" alt="" width="60" height="60"><span class="t">'+esc(it.lbl)+'</span>'+(show?'<span class="d">'+esc(it.todo)+'</span>':'')+'<span class="s">'+(it.law?'Obligation légale':'Bonne pratique')+' · '+esc(it.src)+'</span></li>'}
+  function block(title,arr,show,ic){return arr.length?'<h3>'+title+' ('+arr.length+')</h3><ul class="plq-list'+(ic==='check'?' ok':'')+'">'+arr.map(function(it){return li(it,show,ic)}).join('')+'</ul>':''}
   $('plq-res').innerHTML='<span class="plq-tag">Votre diagnostic</span><p class="plq-score">'+lawOk+'<small> / '+law+' obligations légales remplies</small></p><h2>'+t+'</h2><p class="plq-lead">'+m+'</p>'+
    '<div class="plq-actions"><a class="plq-btn" href="/contact">Être accompagné par Purple Lab <span aria-hidden="true">→</span></a><a class="plq-btn is-ghost" href="/formations-et-sensibilisations">Nos formations</a><button type="button" class="plq-btn is-ghost" id="plq-again">Refaire le diagnostic</button></div>'+
-   (miss.length?'<h3>À mettre en place ('+miss.length+')</h3><ul class="plq-list">'+miss.map(function(it){return li(it,true)}).join('')+'</ul>':'')+
-   (okL.length?'<h3>Déjà en place ('+okL.length+')</h3><ul class="plq-list ok">'+okL.map(function(it){return li(it,false)}).join('')+'</ul>':'');
-  $('plq-res').hidden=false;$('plq-again').onclick=start;top();
+   '<div class="plq-dl"><h3>Votre bilan Purple Lab à télécharger</h3><p>Un document PDF avec le plan d\'action et votre bilan, à partager avec votre direction, vos RH ou votre CSE.</p><label for="plq-org">Nom de l\'entreprise ou de la structure (obligatoire)</label><div class="plq-orgf"><input id="plq-org" type="text" autocomplete="organization" maxlength="80" placeholder="Ex. : Société Dupont" value="'+esc(org)+'"><button type="button" class="plq-btn" id="plq-pdf-btn">Télécharger mon bilan (PDF) <span aria-hidden="true">↓</span></button></div><p class="plq-err" id="plq-err" role="alert"></p></div>'+
+   block('Obligations légales à mettre en place',todo,true,'croix')+block('Obligations à vérifier',check,true,'loupe')+block('Bonnes pratiques à renforcer',bp,true,'idee')+block('Déjà en place',okL,false,'check')+
+   '<div class="plq-law"><b>À suivre</b> · '+esc(LAWTXT)+'</div>';
+  $('plq-res').hidden=false;$('plq-again').onclick=start;$('plq-pdf-btn').onclick=pdf;$('plq-org').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();pdf()}});top();
 }
-function start(){size=null;list=[];i=0;ans=[];$('plq-intro').hidden=true;$('plq-res').hidden=true;$('plq-game').hidden=false;render()}
+function loadLib(cb){if(window.html2pdf)return cb();var s=document.createElement('script');s.src='assets/vendor/html2pdf.bundle.min.js';s.onload=cb;s.onerror=function(){alert("Le téléchargement n'a pas pu démarrer. Vérifiez votre connexion et réessayez.")};document.head.appendChild(s)}
+function pdf(){
+  var v=($('plq-org').value||'').trim();if(v.length<2){$('plq-err').textContent="Indiquez le nom de l'entreprise ou de la structure pour télécharger le bilan.";$('plq-org').focus();return}
+  $('plq-err').textContent='';org=v;
+  var btn=$('plq-pdf-btn');if(btn.disabled)return;btn.disabled=true;var old=btn.innerHTML;btn.textContent='Préparation du PDF…';
+  var d=new Date(),date=d.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  var GR='#C2378F',GRb='#FFE3F6',YE='#C45A12',YEb='#FFE6D6',RE='#B42332',REb='#FFDCDC',V='#7C4DE3',N='#1A0D7E',INK='#2F2B3A',MU='#6B6578',LI='#E2DFE8',G='#F2F2F2';
+  function num(k){return String(k).padStart(2,'0')}
+  function nw(t){return esc(t).replace(/(\d+(?:-\d+)+)/g,'<span style="white-space:nowrap">$1</span>')}
+  function secH(n,t){return '<div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid '+INK+';padding-bottom:6px;margin:26px 0 0;page-break-after:avoid"><span style="font:500 11px Inter,sans-serif;color:'+V+'">'+n+'</span><h2 style="font:500 16px/1.2 Inter,sans-serif;letter-spacing:0;color:'+INK+';margin:0">'+t+'</h2></div>'}
+  var KC={law:[RE,REb,'Non conforme'],chk:[YE,YEb,'À vérifier'],bp:[YE,YEb,'À renforcer']};
+  function pill(kind){var c=KC[kind];return '<span style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font:500 9px/1 Inter,sans-serif;border-radius:999px;padding:4px 8px;background:'+c[1]+';color:'+c[0]+'"><span style="width:6px;height:6px;border-radius:50%;background:'+c[0]+'"></span>'+c[2]+'</span>'}
+  var acts=[].concat(R.todo.map(function(it){return [it,'law']}),R.check.map(function(it){return [it,'chk']}),R.bp.map(function(it){return [it,'bp']}));
+  var plan=acts.length?'<table style="width:100%;border-collapse:collapse;font-size:11px;line-height:1.45">'+
+    '<tr style="color:'+MU+';font-size:9px;text-transform:uppercase;letter-spacing:.06em"><td style="padding:8px 0 6px 11px;width:40px">N°</td><td style="padding:8px 10px 6px 0">Action à mener</td><td style="padding:8px 10px 6px 0;width:98px">Statut</td><td style="padding:8px 0 6px;width:150px">Fondement</td></tr>'+
+    acts.map(function(a,k){var it=a[0];return '<tr style="page-break-inside:avoid"><td style="vertical-align:top;padding:10px 0;border-top:1px solid '+LI+';border-left:3px solid '+KC[a[1]][0]+';padding-left:8px;font-weight:500;color:'+KC[a[1]][0]+'">'+num(k+1)+'</td>'+
+      '<td style="vertical-align:top;padding:10px 12px 10px 0;border-top:1px solid '+LI+'"><div style="font-weight:500;color:'+INK+'">'+nw(it.todo)+'</div><div style="color:'+MU+';font-size:10px;margin-top:2px">'+esc(it.lbl)+'</div></td>'+
+      '<td style="vertical-align:top;padding:10px 10px 10px 0;border-top:1px solid '+LI+'">'+pill(a[1])+'</td>'+
+      '<td style="vertical-align:top;padding:10px 0;border-top:1px solid '+LI+';color:'+MU+';font-size:9.5px">'+nw(it.src)+'</td></tr>'}).join('')+'</table>'
+    :'<p style="font-size:11.5px;margin:12px 0 0">Aucune action prioritaire : tous les points listés sont déclarés en place. L\'enjeu est de les faire vivre dans la durée.</p>';
+  var okList=R.ok.length?'<div style="display:flex;flex-wrap:wrap;gap:0 24px;margin-top:4px">'+R.ok.map(function(it){return '<div style="width:calc(50% - 12px);display:flex;gap:7px;padding:6px 0;border-bottom:1px solid '+LI+';font-size:10.5px;line-height:1.35;page-break-inside:avoid"><span style="color:'+GR+';font-weight:600">✓</span><span>'+esc(it.lbl)+'</span></div>'}).join('')+'</div>':'<p style="font-size:10.5px;color:'+MU+';margin:6px 0 0">Aucun point déclaré en place.</p>';
+  var miss=R.law-R.lawOk,LV=miss===0?[GR,GRb,'Conforme']:(miss<=2?[YE,YEb,'À consolider']:[RE,REb,'Exposé']);
+  function stat(n,l,c,bg){return '<div style="flex:1;padding:12px 14px;border-radius:6px;background:'+bg+'"><div style="font:500 24px/1 Inter,sans-serif;color:'+c+'">'+n+'</div><div style="font-size:9.5px;color:'+MU+';margin-top:4px;line-height:1.3">'+l+'</div></div>'}
+  var el=document.createElement('div');
+  el.innerHTML='<div style="width:718px;padding:30px 40px 0;font-family:Inter,sans-serif;color:'+INK+';background:#fff;box-sizing:border-box">'+
+   '<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;border-bottom:1px solid '+LI+'"><img src="assets/cdn/6785459ee5d4f364d7b2e7d7/6a61b15b73506f762ba2b6e2_Purple-Lab_logo.svg" style="height:32px" alt="Purple Lab"><div style="text-align:right;font-size:9px;color:'+MU+';line-height:1.5">Prévention des violences au travail<br>contact@purplelab.fr · 07 50 84 52 01 · purplelab.fr</div></div>'+
+   '<div style="background:#EFE8FF;border-radius:8px;margin-top:16px;display:flex;align-items:stretch;overflow:hidden">'+
+    '<div style="flex:1;min-width:0;padding:20px 8px 18px 24px"><div style="font:500 9px Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:'+V+'">Bilan de conformité</div>'+
+    '<div style="font:500 12.5px/1.3 Inter,sans-serif;margin-top:4px;color:'+N+'">Prévention des violences au travail : harcèlement et discriminations</div>'+
+    '<h1 style="font:600 25px/1.15 Inter,sans-serif;letter-spacing:0;color:'+V+';margin:12px 0 10px;word-break:break-word">'+esc(org)+'</h1>'+
+    '<div style="display:flex;gap:22px;font-size:9.5px;line-height:1.5;color:'+INK+'"><div><span style="color:'+MU+'">Effectif</span><br><b style="font-weight:500">'+esc(R.size)+'</b></div><div><span style="color:'+MU+'">Date</span><br><b style="font-weight:500">'+date+'</b></div></div></div>'+
+    '<div style="flex:none;width:150px;display:flex;align-items:flex-end;justify-content:center;padding-top:10px"><img src="assets/site/PurpleLab-diagnostic-illustration.webp" alt="" style="width:140px;height:auto;display:block"></div>'+
+   '</div>'+
+   '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px"><div style="font-size:10px;color:'+MU+'">Niveau de conformité légale</div><span style="display:inline-flex;align-items:center;gap:6px;font:600 10.5px Inter,sans-serif;color:'+LV[0]+';background:'+LV[1]+';border-radius:999px;padding:5px 11px"><span style="width:8px;height:8px;border-radius:50%;background:'+LV[0]+'"></span>'+LV[2]+' · '+R.lawOk+' / '+R.law+' obligations remplies</span></div>'+
+   '<div style="display:flex;gap:8px;margin-top:10px">'+stat(R.todo.length,'obligations légales<br>non conformes',RE,REb)+stat(R.check.length+R.bp.length,'points à vérifier<br>ou à renforcer',YE,YEb)+stat(R.ok.length,'points<br>maîtrisés',GR,GRb)+'</div>'+
+   secH('01','Plan d\'action')+'<p style="font-size:10px;color:'+MU+';margin:8px 0 2px">Les actions sont classées par ordre de priorité : obligations légales manquantes, puis obligations à vérifier, puis bonnes pratiques.</p>'+plan+
+   '<div class="pb-avoid" style="page-break-inside:avoid">'+secH('02','Bilan · '+esc(org))+
+    '<div style="display:flex;gap:22px;margin-top:12px;align-items:flex-start"><div style="flex:none;font:500 34px/1 Inter,sans-serif;color:'+LV[0]+'">'+R.lawOk+'<span style="font-size:14px;color:'+MU+'"> / '+R.law+'</span></div><div><div style="font:500 13px/1.3 Inter,sans-serif;color:'+INK+'">'+esc(R.t)+'</div><div style="font-size:10.5px;line-height:1.5;margin-top:3px">'+esc(R.m)+'</div></div></div></div>'+
+   '<div class="pb-avoid"><div style="font:500 10.5px Inter,sans-serif;color:'+INK+';margin:16px 0 0"><span style="color:'+GR+'">●</span> Points maîtrisés</div>'+okList+'</div>'+
+   '<div class="pb-avoid" style="page-break-inside:avoid">'+secH('03','Être accompagné par Purple Lab')+
+    '<div style="background:'+V+';color:#fff;border-radius:6px;padding:18px 20px;margin-top:12px">'+
+     '<div style="font:500 15px/1.3 Inter,sans-serif">Mettez en œuvre ce plan d\'action avec des spécialistes de la prévention des violences au travail.</div>'+
+     '<div style="display:flex;gap:16px;margin-top:12px;font-size:10.5px;line-height:1.4">'+['Formation des managers, RH et référents','Sensibilisation des équipes','Enquêtes internes et gestion de crise'].map(function(t){return '<div style="flex:1;border-top:1px solid rgba(255,255,255,.5);padding-top:7px">'+t+'</div>'}).join('')+'</div>'+
+     '<div style="margin-top:14px;font:500 12.5px Inter,sans-serif">contact@purplelab.fr · 07 50 84 52 01 · purplelab.fr/contact</div>'+
+    '</div></div>'+
+   '<p style="font-size:8.5px;color:'+MU+';margin:16px 0 0;line-height:1.45"><b style="font-weight:500;color:'+INK+'">À suivre</b> · '+esc(LAWTXT)+'</p>'+
+   '<p style="font-size:8.5px;color:'+MU+';margin:6px 0 0;line-height:1.45">Autodiagnostic déclaratif et indicatif, établi à partir des réponses saisies en ligne. Il ne remplace ni un audit ni un conseil juridique. Textes en vigueur au 10 novembre 2026 (Code du travail, Code pénal, loi n° 2016-1691), consultables sur legifrance.gouv.fr.</p></div>';
+  loadLib(function(){
+    var sy=window.scrollY;window.scrollTo(0,0);
+    var name='Bilan-Purple-Lab-violences-au-travail'+(org?'-'+org.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,''):'')+'.pdf';
+    html2pdf().set({margin:[8,0,10,0],filename:name,image:{type:'jpeg',quality:0.95},html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff',scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css'],avoid:['tr','.pb-avoid']}}).from(el.firstChild).save().then(function(){window.scrollTo(0,sy);btn.disabled=false;btn.innerHTML=old},function(){window.scrollTo(0,sy);btn.disabled=false;btn.innerHTML=old;alert("Le PDF n'a pas pu être créé. Réessayez.")});
+  });
+}
+function start(){size=null;list=[];i=0;ans=[];busy=false;$('plq-step').classList.remove('is-out','is-in');$('plq').classList.remove('is-intro');$('plq-intro').hidden=true;$('plq-res').hidden=true;$('plq-game').hidden=false;render()}
 $('plq-start').onclick=start;
-$('plq-opts').addEventListener('click',function(e){var b=e.target.closest('.plq-opt');if(!b)return;
-  if(b.dataset.s!==undefined){size=SIZES[+b.dataset.s][1];list=Q.filter(function(q){return q.min<=size});i=0;ans=[];render();return}
-  ans[i]=+b.dataset.a;i++;if(i<list.length)render();else result()});
-$('plq-back').onclick=function(){if(i>0)i--;else{size=null}render()};
+var busy=false;
+function go(fn){var st=$('plq-step');st.classList.add('is-out');setTimeout(function(){fn();if($('plq-game').hidden)return;st.classList.remove('is-out');st.classList.add('is-in');void st.offsetWidth;st.classList.remove('is-in');busy=false},300)}
+$('plq-opts').addEventListener('click',function(e){var b=e.target.closest('.plq-opt');if(!b||busy)return;busy=true;
+  [].forEach.call($('plq-opts').children,function(x){x.classList.remove('is-picked')});b.classList.add('is-picked');
+  if(b.dataset.s!==undefined){var sv=+b.dataset.s;$('plq-saved').textContent='✓ C\'est noté';setTimeout(function(){go(function(){sizeK=sv;size=SIZES[sv][1];list=Q.filter(function(q){return q.min<=size});i=0;ans=[];render()})},650);return}
+  ans[i]=+b.dataset.a;$('plq-saved').textContent='✓ Réponse enregistrée'+(i<list.length-1?' · question suivante…':' · calcul du résultat…');
+  setTimeout(function(){go(function(){i++;if(i<list.length)render();else{busy=false;result()}})},700)});
+$('plq-back').onclick=function(){if(busy)return;busy=true;go(function(){if(i>0)i--;else{size=null}render()})};
 })();
 </script>
 </div></div></section>

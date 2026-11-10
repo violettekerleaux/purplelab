@@ -11,8 +11,8 @@ QUIZ = (HERE / 'quiz.html').read_text()
 
 # --- 1. Nouvelle page, gabarit = politique de confidentialité
 p = (SRC / 'politique-de-confidentialite.html').read_text()
-title = 'Harcèlement au travail : votre entreprise est-elle en règle ? · Purple Lab'
-desc = "Autodiagnostic gratuit : référent harcèlement, procédure de signalement, DUERP, règlement intérieur… Vérifiez si votre entreprise respecte ses obligations légales."
+title = 'Violences au travail : votre entreprise est-elle en règle ? · Purple Lab'
+desc = "Autodiagnostic gratuit sur le harcèlement et les discriminations : référent, procédure de signalement, DUERP, égalité femmes-hommes… Vérifiez si votre entreprise respecte ses obligations légales."
 p = re.sub(r'<title>.*?</title>', f'<title>{title}</title>', p)
 p = p.replace('https://purplelab.fr/politique-de-confidentialite', f'https://purplelab.fr/{SLUG}')
 old_desc = "Données personnelles, cookies et hébergement du site purplelab.fr : ce que Purple Lab collecte, et ce qu&#x27;il ne collecte pas."
@@ -33,10 +33,18 @@ p = p.replace("<a aria-current='page' class='link-footer-tiny w--current' href='
 ENCART = (HERE / 'encart.html').read_text()
 for page in ['index.html', 'formations-et-sensibilisations.html']:
     h = (SRC / page).read_text()
-    if 'pl-encart-test' not in h:
-        i = h.index('<section class="section_faq"')
-        h = h[:i] + ENCART + h[i:]
+    # retire une version précédente de l'encart, puis l'insère en haut de la section FAQ
+    h = re.sub(r'<section class="pl-encart-test".*?</div></section>', '', h, flags=re.S)
+    i = h.index('<section class="section_faq"')
+    j = h.index('>', i) + 1
+    h = h[:j] + ENCART + h[j:]
     (OUT / page).write_text(h)
+
+# --- 2b. Fichiers : illustration + bibliothèque PDF
+import shutil as _sh
+(OUT/'assets/site').mkdir(parents=True, exist_ok=True); (OUT/'assets/vendor').mkdir(parents=True, exist_ok=True)
+for f in (HERE/'img').iterdir(): _sh.copyfile(f, OUT/'assets/site'/f.name)
+for f in (HERE/'vendor').iterdir(): _sh.copyfile(f, OUT/'assets/vendor'/f.name)
 
 # --- 3. Redirection .html + sitemap
 t = (SRC / 'netlify.toml').read_text()
