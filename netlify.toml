@@ -1,2 +1,58 @@
+# Configuration Netlify du site purplelab.fr
 [build]
   publish = "."
+
+# Le lien « Expertises » renvoyait une erreur 404 : on redirige vers l'accueil
+[[redirects]]
+  from = "/expertises"
+  to = "/"
+  status = 301
+
+# Une seule adresse par page pour Google : les versions en .html redirigent vers l'adresse propre
+[[redirects]]
+  from = "/index.html"
+  to = "/"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/formations-et-sensibilisations.html"
+  to = "/formations-et-sensibilisations"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/conseil-enquete-et-gestion-de-crise.html"
+  to = "/conseil-enquete-et-gestion-de-crise"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/contact.html"
+  to = "/contact"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/politique-de-confidentialite.html"
+  to = "/politique-de-confidentialite"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/test-harcelement-au-travail.html"
+  to = "/test-harcelement-au-travail"
+  status = 301
+  force = true
+
+# Fichiers Webflow (noms uniques) : gardés en cache un an
+[[headers]]
+  for = "/assets/cdn/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Autres fichiers du site : gardés en cache un jour
+[[headers]]
+  for = "/assets/vendor/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+[[headers]]
+  for = "/assets/site/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
