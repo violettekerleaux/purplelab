@@ -15,6 +15,7 @@ export default async (req) => {
   if (req.method !== "POST") return reponse({ erreur: "Méthode non autorisée" }, 405, prive);
   const client = trouverClient(req.headers.get("x-cle"));
   if (!client) return reponse({ erreur: "Lien invalide ou expiré." }, 404, prive);
+  if (client.consultation) return reponse({ erreur: "Cette page sert uniquement à consulter les disponibilités." }, 403, prive);
   let d;
   try {
     d = await req.json();

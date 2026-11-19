@@ -122,6 +122,15 @@ textarea{min-height:64px;resize:vertical}
 .ok li{margin:2px 0}
 .ok p{color:var(--doux);margin:0 0 8px}
 .barre{display:none}
+body.consult .modes-titre,body.consult .modes,body.consult .cote,body.consult .barre,body.consult .l-choix{display:none!important}
+body.consult .corps{grid-template-columns:minmax(0,1fr)}
+body.consult .c:not(.pris){cursor:default}
+body.consult .jt{cursor:default}
+body.consult .jt .jl{display:none}
+body.consult .c:not(.pris):not(.visio-seul):hover{background:var(--blanc)}
+.invit{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;background:var(--lilas-clair, #F4EFFF);border:1px solid var(--lilas);border-radius:10px;padding:12px 14px;margin:0 0 12px;font-size:14px}
+.invit strong{color:var(--violet);font-weight:600}
+.invit .bouton{width:auto;padding:8px 14px;font-size:13px;margin:0}
 [hidden]{display:none!important}
 .pied{text-align:center;font-size:12px;color:var(--doux);margin-top:14px}
 .pied a{color:inherit}
@@ -186,6 +195,7 @@ textarea{min-height:64px;resize:vertical}
         <button type="button" class="mode" data-mode="presentiel" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5M9 10h.01M15 10h.01"/></svg><span><strong>Présentiel</strong><small>Purple Lab vient dans vos locaux</small></span><span class="coche"></span></button>
         <button type="button" class="mode" data-mode="visio" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3"/></svg><span><strong>Visio</strong><small>Lien envoyé par e&#8209;mail</small></span><span class="coche"></span></button>
       </div>
+      <div class="invit" id="invit" hidden><span>Pour réserver, envoyez une invitation à <strong id="invit-mail"></strong> sur un créneau libre, en visio ou dans vos locaux.</span><button class="bouton" id="invit-copier" type="button">Copier l'adresse</button></div>
       <p class="mode-aide" id="mode-aide">Les cases que vous cliquez seront réservées en <b>présentiel</b>. Changez de type à tout moment.</p>
       <div class="semaines" id="semaines" role="tablist" aria-label="Semaines"></div>
       <div class="nav">
@@ -195,10 +205,10 @@ textarea{min-height:64px;resize:vertical}
       </div>
       <div class="grille" id="grille"></div>
       <div class="legende">
-        <span><i class="l-libre"></i>Libre, cliquez pour choisir</span>
+        <span><i class="l-libre"></i><span id="leg-libre">Libre, cliquez pour choisir</span></span>
         <span><i class="l-pris"></i>Indisponible</span>
-        <span><i class="l-choisi"></i>Présentiel choisi</span>
-        <span><i class="l-visio"></i>Visio choisie</span>
+        <span class="l-choix"><i class="l-choisi"></i>Présentiel choisi</span>
+        <span class="l-choix"><i class="l-visio"></i>Visio choisie</span>
         <span id="leg-trajet"><i class="l-trajet"></i>Zone tampon pour le déplacement (non réservable)</span>
         <button class="lien" id="copier" type="button">Copier mes disponibilités de la semaine</button>
       </div>
@@ -323,6 +333,20 @@ textarea{min-height:64px;resize:vertical}
     $("i-lieu").textContent += " ou en visio";
     $("i-pas").textContent = `Créneaux de ${client.pasMinutes >= 60 ? client.pasMinutes / 60 + " h" : client.pasMinutes + " min"}`;
     $("infos").hidden = false;
+    if (client.consultation) {
+      document.body.classList.add("consult");
+      document.title = `Disponibilités · Purple Lab`;
+      $("mode-aide").hidden = true;
+      $("leg-libre").textContent = "Libre";
+      $("leg-trajet").lastChild.textContent = "Zone tampon pour mes déplacements (pas de rendez-vous)";
+      if (client.emailInvitation) {
+        $("invit").hidden = false; $("invit-mail").textContent = client.emailInvitation;
+        $("invit-copier").onclick = async () => {
+          try { await navigator.clipboard.writeText(client.emailInvitation); $("invit-copier").textContent = "Copiée ✓"; } catch { $("invit-copier").textContent = client.emailInvitation; }
+          setTimeout(() => ($("invit-copier").textContent = "Copier l'adresse"), 2000);
+        };
+      }
+    }
     $("champ-adresse").hidden = !client.demanderAdresse;
     if (client.adresse && !$("adresse").value) $("adresse").value = client.adresse;
     const ct = client.contact;
@@ -380,6 +404,7 @@ textarea{min-height:64px;resize:vertical}
       b.title = libres.length ? (tous ? "Retirer toute la journée" : "Choisir toute la journée") : "";
       b.setAttribute("aria-label", fmtJour.format(d) + (libres.length ? (tous ? ", retirer toute la journée" : ", choisir toute la journée") : ", complet"));
       b.onclick = () => {
+        if (client.consultation) return;
         if (tous) libres.forEach((c) => choix.delete(c.debut));
         else for (const c of libres) if (!tamponPour(c, mode)) choix.set(c.debut, { ...c, iso: j, mode });
         majChoix();
@@ -396,7 +421,7 @@ textarea{min-height:64px;resize:vertical}
           b.className = "c visio-seul"; b.innerHTML = "Zone tampon<small>déplacement</small>"; b.dataset.court = "trajet";
           b.title = "Zone tampon : temps de déplacement de Purple Lab.";
           b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(c.heure)} : zone tampon pour le déplacement, non réservable`);
-          b.onclick = () => { $("mode-aide").innerHTML = "Ce créneau est une <b>zone tampon</b> : Purple Lab a besoin d'une heure pour se déplacer avant et après chaque rendez-vous sur place."; };
+          if (!client.consultation) b.onclick = () => { $("mode-aide").innerHTML = "Ce créneau est une <b>zone tampon</b> : Purple Lab a besoin d'une heure pour se déplacer avant et après chaque rendez-vous sur place."; };
         } else if (!c || !c.libre) {
           b.className = "c pris"; b.disabled = true; b.textContent = "Indisponible"; b.dataset.court = "–";
           b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(h)} : indisponible`);
@@ -409,6 +434,7 @@ textarea{min-height:64px;resize:vertical}
           b.setAttribute("aria-pressed", pris);
           b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(c.heure)} à ${hh(c.fin)} : libre`);
           b.onclick = () => {
+            if (client.consultation) return;
             if (pris && m === mode) choix.delete(c.debut);
             else if (tamponPour(c, mode)) { $("mode-aide").innerHTML = "Impossible ici en présentiel : il faut une heure de trajet sans visio avant et après."; return; }
             else choix.set(c.debut, { ...c, iso: j, mode });

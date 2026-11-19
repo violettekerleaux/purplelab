@@ -108,4 +108,6 @@ export const profilPublic = (c) => ({
   demanderAdresse: c.demanderAdresse,
   trajetMinutes: c.trajetMinutes,
   fuseau: c.fuseau,
+  consultation: !!c.consultation,
+  emailInvitation: c.emailInvitation || null,
 });
