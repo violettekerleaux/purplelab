@@ -7,7 +7,22 @@
       "cleSha256": "b47be6b1af30d8d84bb590e769056b3bbda3fcae816605cae05fa21bcb1e0be9",
       "nom": "Société Exemple",
       "adresse": "12 rue de l'Exemple, 75011 Paris",
-      "contact": { "prenom": "Camille", "nom": "Martin", "email": "camille.martin@exemple.fr" }
+      "contact": {
+        "prenom": "Camille",
+        "nom": "Martin",
+        "email": "camille.martin@exemple.fr"
+      }
+    },
+    {
+      "id": "tf1",
+      "cleSha256": "2eead46248527bc25b155ffbeebb2ddb98234428f9d4d307c8e9509d6bb420ed",
+      "nom": "TF1",
+      "adresse": "",
+      "contact": {
+        "prenom": "Valérie",
+        "nom": "",
+        "email": ""
+      }
     }
   ]
 }

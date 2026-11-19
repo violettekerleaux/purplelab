@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node test/test-creneaux.mjs && node test/test-client.mjs",
+    "test": "node test/test-creneaux.mjs && node test/test-client.mjs && node test/test-agendas.mjs",
     "local": "node test/serveur-local.mjs"
   },
   "dependencies": {

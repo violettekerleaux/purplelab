@@ -60,6 +60,26 @@ Démonstration en local : `npm run local`, puis http://localhost:8888/c/demo-enq
 Un évènement de l'agenda bloque le créneau, sauf s'il est annulé,
 marqué « Disponible » ou refusé.
 
+## Plusieurs agendas
+
+La page additionne les créneaux occupés de tous tes agendas : il suffit d'être pris dans un seul pour que la case soit « indisponible ».
+Si un des agendas ne répond pas, la page n'affiche rien plutôt que de montrer un créneau libre par erreur.
+
+Récupérer le lien de chaque agenda Google (une action par ligne) :
+1. Ouvrir Google Agenda sur ordinateur.
+2. Roue dentée > Paramètres.
+3. À gauche, sous « Paramètres de mes agendas », cliquer sur un agenda.
+4. Descendre jusqu'à « Adresse secrète au format iCal » et copier le lien.
+5. Recommencer pour chaque agenda.
+
+Agenda Outlook / Microsoft 365 : Paramètres > Calendrier > Calendriers partagés > « Publier un calendrier » > choisir « Peut afficher toutes les informations » > copier le lien ICS.
+
+Les mettre dans Netlify :
+1. Netlify > le projet de prise de rendez-vous > Project configuration > Environment variables.
+2. Add a variable > Key : `AGENDA_ICS_URL`.
+3. Value : coller tous les liens à la suite, séparés par une virgule.
+4. Save, puis Deploys > Trigger deploy.
+
 ## Mise en ligne, le moment venu (une action par ligne)
 
 1. Google Agenda > Paramètres > ton agenda > « Adresse secrète au format iCal » : copier le lien.
