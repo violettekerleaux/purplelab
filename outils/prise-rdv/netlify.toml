@@ -1,0 +1,60 @@
+[build]
+  publish = "public"
+  command = "npm ci"
+
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["rdv.config.json", "clients.json"]
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "frame-ancestors 'self' https://purplelab.fr https://www.purplelab.fr https://purplelab.netlify.app"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# Pages privées des clients : /c/<clé secrète>
+[[redirects]]
+  from = "/c/*"
+  to = "/client.html"
+  status = 200
+
+[[headers]]
+  for = "/c/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Referrer-Policy = "no-referrer"
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/client.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Referrer-Policy = "no-referrer"
+
+# Même page, servie aussi via purplelab.fr/rdvclient/<clé> (proxy depuis le site principal)
+[[redirects]]
+  from = "/rdvclient/*"
+  to = "/client.html"
+  status = 200
+
+[[headers]]
+  for = "/rdvclient/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Referrer-Policy = "no-referrer"
+    Cache-Control = "no-store"
+[[redirects]]
+  from = "/rdvclient"
+  to = "/client.html"
+  status = 200
+[[headers]]
+  for = "/rdvclient"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"

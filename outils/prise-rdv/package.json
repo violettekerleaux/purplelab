@@ -1,0 +1,15 @@
+{
+  "name": "purplelab-rdv",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test/test-creneaux.mjs && node test/test-client.mjs && node test/test-agendas.mjs",
+    "local": "node test/serveur-local.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "8.1.0",
+    "ical.js": "2.1.0",
+    "luxon": "3.5.0",
+    "nodemailer": "6.9.16"
+  }
+}

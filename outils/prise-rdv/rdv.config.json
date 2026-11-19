@@ -1,0 +1,23 @@
+{
+  "fuseau": "Europe/Paris",
+  "titre": "Premier échange avec Purple Lab",
+  "description": "Un premier échange pour comprendre votre besoin : formation, sensibilisation, conseil, enquête ou gestion de crise.",
+  "dureeMinutes": 30,
+  "pasMinutes": 30,
+  "margeMinutes": 15,
+  "delaiMinimumHeures": 24,
+  "horizonJours": 30,
+  "maxRdvParJour": 4,
+  "joursOuvres": [1, 2, 3, 4, 5],
+  "plages": [
+    { "debut": "09:30", "fin": "12:30" },
+    { "debut": "14:00", "fin": "18:00" }
+  ],
+  "joursFermes": [
+    "2026-11-11", "2026-12-25", "2027-01-01", "2027-03-29", "2027-05-01",
+    "2027-05-06", "2027-05-08", "2027-05-17", "2027-07-14", "2027-08-15",
+    "2027-11-01", "2027-11-11", "2027-12-25"
+  ],
+  "lieu": "Visioconférence (le lien vous sera envoyé)",
+  "lienVisio": ""
+}

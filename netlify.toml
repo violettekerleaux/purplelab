@@ -1,2 +1,9 @@
 [build]
   publish = "."
+
+# Le code de la prise de rendez-vous (outils/) est déployé à part : jamais servi sur purplelab.fr.
+[[redirects]]
+  from = "/outils/*"
+  to = "/404"
+  status = 404
+  force = true
