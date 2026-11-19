@@ -18,6 +18,7 @@ const DEFAUTS = {
   delaiMinimumHeures: 48,
   horizonJours: 60,
   maxCreneaux: 20,
+  demanderAdresse: true,
 };
 
 export const empreinte = (cle) => createHash("sha256").update(String(cle)).digest("hex");
@@ -93,5 +94,6 @@ export const profilPublic = (c) => ({
   contact: c.contact || null,
   pasMinutes: c.pasMinutes,
   maxCreneaux: c.maxCreneaux,
+  demanderAdresse: c.demanderAdresse,
   fuseau: c.fuseau,
 });

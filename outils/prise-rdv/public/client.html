@@ -181,7 +181,7 @@ textarea{min-height:64px;resize:vertical}
           <div class="champ"><label for="nom">Nom</label><input id="nom" name="nom" autocomplete="family-name" required></div>
           <div class="champ large"><label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="email" required></div>
           <div class="champ large"><label for="telephone">Téléphone <span class="opt">(facultatif)</span></label><input id="telephone" name="telephone" type="tel" autocomplete="tel"></div>
-          <div class="champ large"><label for="adresse">Adresse où nous venons</label><input id="adresse" name="adresse" autocomplete="street-address"></div>
+          <div class="champ large" id="champ-adresse"><label for="adresse">Adresse où nous venons</label><input id="adresse" name="adresse" autocomplete="street-address"></div>
           <div class="champ large"><label for="message">Précisions <span class="opt">(salle, personnes à rencontrer…)</span></label><textarea id="message" name="message" maxlength="2000"></textarea></div>
           <button class="bouton" id="envoyer" type="submit" disabled>Réserver ces créneaux</button>
           <p class="erreur" id="form-erreur" hidden></p>
@@ -264,6 +264,7 @@ textarea{min-height:64px;resize:vertical}
     $("i-lieu").textContent = client.adresse ? `${client.lieu} · ${client.adresse}` : client.lieu;
     $("i-pas").textContent = `Créneaux de ${client.pasMinutes >= 60 ? client.pasMinutes / 60 + " h" : client.pasMinutes + " min"}`;
     $("infos").hidden = false;
+    $("champ-adresse").hidden = !client.demanderAdresse;
     if (client.adresse && !$("adresse").value) $("adresse").value = client.adresse;
     const ct = client.contact;
     if (ct && !$("email").value) { $("prenom").value = ct.prenom || ""; $("nom").value = ct.nom || ""; $("email").value = ct.email || ""; }

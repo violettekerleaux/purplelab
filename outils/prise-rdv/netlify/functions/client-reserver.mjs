@@ -26,7 +26,7 @@ export default async (req) => {
   const nom = nettoyer(d.nom, 80);
   const email = nettoyer(d.email, 160).toLowerCase();
   const telephone = nettoyer(d.telephone, 40);
-  const adresse = nettoyer(d.adresse, 300) || client.adresse || "";
+  const adresse = (client.demanderAdresse && nettoyer(d.adresse, 300)) || client.adresse || "";
   const message = nettoyerTexte(d.message);
   const choix = Array.isArray(d.creneaux) ? d.creneaux.map((c) => nettoyer(c, 40)).filter(Boolean) : [];
 

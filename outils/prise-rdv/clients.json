@@ -22,7 +22,8 @@
         "prenom": "Valérie",
         "nom": "",
         "email": ""
-      }
+      },
+      "demanderAdresse": false
     }
   ]
 }

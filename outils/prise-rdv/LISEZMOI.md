@@ -31,6 +31,8 @@ Ajouter un client (une action par ligne) :
 2. Copier le lien affiché et le garder : il n'est enregistré nulle part ailleurs.
 3. Redéployer le projet Netlify, puis envoyer le lien au client.
 
+Ne pas demander l'adresse au client : mettre `"demanderAdresse": false` sur ce client (c'est le cas pour TF1).
+
 Couper un lien : mettre `"actif": false` sur le client dans `clients.json`, puis redéployer.
 
 Démonstration en local : `npm run local`, puis http://localhost:8888/c/demo-enquete-sur-site-2026
