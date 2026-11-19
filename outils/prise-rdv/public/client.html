@@ -202,10 +202,6 @@ textarea{min-height:64px;resize:vertical}
         <span id="leg-trajet"><i class="l-trajet"></i>Zone tampon pour le déplacement (possible en visio)</span>
         <button class="lien" id="copier" type="button">Copier mes disponibilités de la semaine</button>
       </div>
-      <div class="resume">
-        <h3>Disponibilités de Purple Lab cette semaine</h3>
-        <ul id="resume"></ul>
-      </div>
     </section>
 
     <aside class="cote">
@@ -422,11 +418,6 @@ textarea{min-height:64px;resize:vertical}
       });
     }
 
-    // Résumé texte de la semaine
-    $("resume").innerHTML = dj.map((j) => {
-      const t = plagesTexte(j);
-      return `<li class="${t ? "" : "non"}"><span>${maj(fmtCourt.format(dateUTC(j)))}</span><span>${t || "indisponible"}</span></li>`;
-    }).join("");
     majCote();
   }
 
