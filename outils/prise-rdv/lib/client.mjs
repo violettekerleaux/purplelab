@@ -13,7 +13,7 @@ const DEFAUTS = {
   lieu: "Dans vos locaux",
   adresse: "",
   pasMinutes: 60,
-  plages: [{ debut: "09:00", fin: "18:00" }],
+  plages: [{ debut: "09:00", fin: "20:00" }],
   margeMinutes: 30,
   delaiMinimumHeures: 48,
   horizonJours: 60,

@@ -40,14 +40,14 @@ t("délai de 48 h : rien de libre avant samedi 21 après-midi", () => {
   assert.deepEqual(libres("2026-11-20"), []);
 });
 t("week-end absent de la grille", () => assert.equal(jours["2026-11-21"], undefined));
-t("mercredi 25 : formation 9h-12h + 30 min de marge → libre à partir de 13h", () => assert.deepEqual(libres("2026-11-25"), ["13:00", "14:00", "15:00", "16:00", "17:00"]));
-t("jeudi 26 : journée entière prise", () => assert.deepEqual(libres("2026-11-26"), []));
-t("lundi 30 : 14h-17h pris (13h et 17h aussi, à cause de la marge)", () => assert.deepEqual(libres("2026-11-30"), ["09:00", "10:00", "11:00", "12:00"]));
+t("mercredi 25 : formation 9h-12h + 30 min de marge → libre à partir de 13h", () => assert.deepEqual(libres("2026-11-25"), ["13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"]));
+t("jeudi 26 : séminaire 9h-18h + marge → seul 19h-20h reste libre", () => assert.deepEqual(libres("2026-11-26"), ["19:00"]));
+t("lundi 30 : 14h-17h pris (13h et 17h aussi, à cause de la marge)", () => assert.deepEqual(libres("2026-11-30"), ["09:00", "10:00", "11:00", "12:00", "18:00", "19:00"]));
 t("jour férié affiché mais pris (25 décembre)", () => assert.ok(jours["2026-12-25"].every((c) => !c.libre)));
-t("créneaux d'une heure, 9h à 18h", () => assert.deepEqual(jours["2026-12-04"].map((c) => c.heure), ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]));
+t("créneaux d'une heure, 9h à 20h", () => assert.deepEqual(jours["2026-12-04"].map((c) => c.heure), ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"]));
 t("une réservation 10h-12h (heure de Paris) bloque 9h à 12h avec la marge", () => {
   const j = grilleClient({ client, occupe, maintenant, reservations: [{ debut: "2026-12-04T09:00:00Z", fin: "2026-12-04T11:00:00Z" }] });
-  assert.deepEqual(j["2026-12-04"].filter((c) => c.libre).map((c) => c.heure), ["13:00", "14:00", "15:00", "16:00", "17:00"]);
+  assert.deepEqual(j["2026-12-04"].filter((c) => c.libre).map((c) => c.heure), ["13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"]);
 });
 t("créneaux consécutifs regroupés en rendez-vous", () => {
   const b = enBlocs(["2026-12-04T10:00:00.000Z", "2026-12-04T08:00:00.000Z", "2026-12-04T09:00:00.000Z", "2026-12-04T13:00:00.000Z", "2026-12-04T09:00:00.000Z"], 60);

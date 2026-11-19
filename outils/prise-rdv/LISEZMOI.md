@@ -11,7 +11,7 @@ Chaque client peut avoir sa propre page, accessible seulement par un lien secret
 `https://<adresse du site>/c/<clé>`. Elle n'est liée nulle part et n'est pas indexée par Google.
 
 Ce que voit le client :
-- une grille semaine par semaine (lundi–vendredi, 9h–18h, cases d'une heure) avec, pour chaque case,
+- une grille semaine par semaine (lundi–vendredi, 9h–20h, cases d'une heure) avec, pour chaque case,
   « libre » ou « indisponible » ; jamais le titre ni le détail de tes rendez-vous ;
 - un bandeau des semaines à venir avec le nombre d'heures libres, et un résumé texte
   (« lun. 23 nov. : 9h–12h, 14h–18h ») qu'il peut copier pour comparer avec son agenda ;
@@ -23,7 +23,7 @@ Ce qui se passe à la validation :
 - toi et le client recevez une invitation par rendez-vous, qui s'ajoute à Google Agenda.
 
 Réglages par défaut d'une page client (modifiables client par client dans `clients.json`) :
-créneaux de 1 h, 9h–18h, 30 min de marge autour de tes rendez-vous (trajet),
+créneaux de 1 h, 9h–20h, 30 min de marge autour de tes rendez-vous (trajet),
 réservation au plus tôt 48 h à l'avance, sur 60 jours, 20 créneaux maximum par demande.
 
 Ajouter un client (une action par ligne) :
