@@ -26,6 +26,9 @@ export const empreinte = (cle) => createHash("sha256").update(String(cle)).diges
 
 // Retrouve le client à partir de la clé du lien. Renvoie null si la clé est inconnue.
 export function trouverClient(cle, clients = liste.clients) {
+  // Page publique sans clé (ex. purplelab.fr/rdvclient)
+  const pub = typeof cle === "string" && clients.find((x) => x.lienPublic && x.lienPublic === cle && x.actif !== false);
+  if (pub) return { ...base, ...DEFAUTS, ...pub };
   if (!cle || typeof cle !== "string" || !/^[A-Za-z0-9_-]{16,80}$/.test(cle)) return null;
   const h = empreinte(cle);
   const c = clients.find((x) => x.cleSha256 === h && x.actif !== false && (!x.testSeulement || modeTest()));
@@ -110,5 +113,6 @@ export const profilPublic = (c) => ({
   trajetMinutes: c.trajetMinutes,
   fuseau: c.fuseau,
   consultation: !!c.consultation,
+  public: !!c.lienPublic,
   emailInvitation: c.emailInvitation || null,
 });

@@ -254,7 +254,7 @@ body.consult .c:not(.pris):not(.visio-seul):hover{background:var(--blanc)}
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
-  const cle = decodeURIComponent((location.pathname.match(/\/(?:c|rdvclient)\/([^/?#]+)/) || [])[1] || new URLSearchParams(location.search).get("cle") || "");
+  const cle = decodeURIComponent((location.pathname.match(/\/(?:c|rdvclient)\/([^/?#]+)/) || [])[1] || new URLSearchParams(location.search).get("cle") || (/^\/rdvclient\/?$/.test(location.pathname) ? "rdvclient" : ""));
   const fmtJour = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
   const fmtCourt = new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
   const fmtJM = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" });
@@ -326,7 +326,8 @@ body.consult .c:not(.pris):not(.visio-seul):hover{background:var(--blanc)}
 
   function remplirTete() {
     document.title = `Réservation · ${client.nom} · Purple Lab`;
-    $("tag").textContent = `Espace privé · ${client.nom}`;
+    $("tag").textContent = client.public ? "Prise de rendez-vous" : `Espace privé · ${client.nom}`;
+    if (client.public) document.querySelector(".pied").firstChild.textContent = "Purple Lab · ";
     $("titre").textContent = client.titre;
     $("description").textContent = client.description;
     $("i-lieu").textContent = client.adresse ? `${client.lieu} · ${client.adresse}` : client.lieu;

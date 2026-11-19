@@ -1,5 +1,5 @@
 {
-  "_aide": "Un client = une page privée /c/<clé>. Ajouter un client : node outils/nouveau-client.mjs \"Nom du client\". Seule l'empreinte de la clé est ici, jamais la clé elle-même. Mettre \"actif\": false pour couper un lien.",
+  "_aide": "Un client = une page privée /c/<clé>. Ajouter un client : node outils/nouveau-client.mjs \"Nom du client\". Seule l'empreinte de la clé est ici, jamais la clé elle-même. Mettre \"actif\": false pour couper un lien. \"lienPublic\": \"rdvclient\" = page sans clé, ouverte à tous (purplelab.fr/rdvclient).",
   "clients": [
     {
       "id": "demo",
@@ -14,9 +14,8 @@
       }
     },
     {
-      "id": "tf1",
-      "cleSha256": "2eead46248527bc25b155ffbeebb2ddb98234428f9d4d307c8e9509d6bb420ed",
-      "nom": "TF1",
+      "id": "public",
+      "nom": "Purple Lab",
       "margeMinutes": 0,
       "consultation": true,
       "dateFin": "2026-12-18",
@@ -24,12 +23,21 @@
       "titre": "Disponibilités de Purple Lab",
       "description": "Les cases violettes sont libres dans mon agenda. Choisissez celles qui vous conviennent et envoyez-moi une invitation depuis votre agenda.",
       "adresse": "",
-      "contact": {
-        "prenom": "Valérie",
-        "nom": "Grisson",
-        "email": ""
-      },
-      "demanderAdresse": false
+      "demanderAdresse": false,
+      "lienPublic": "rdvclient"
+    },
+    {
+      "id": "public",
+      "nom": "Purple Lab",
+      "margeMinutes": 0,
+      "consultation": true,
+      "dateFin": "2026-12-18",
+      "emailInvitation": "violette@purplelab.fr",
+      "titre": "Disponibilités de Purple Lab",
+      "description": "Les cases violettes sont libres dans mon agenda. Choisissez celles qui vous conviennent et envoyez-moi une invitation depuis votre agenda.",
+      "adresse": "",
+      "demanderAdresse": false,
+      "lienPublic": "rdvclient"
     }
   ]
 }

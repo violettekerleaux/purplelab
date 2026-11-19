@@ -33,7 +33,7 @@ http.createServer(async (req, res) => {
     }
     const fichier = url.pathname === "/test/agenda.ics"
       ? join(racine, "test", "agenda-test.ics")
-      : url.pathname.startsWith("/c/")
+      : (url.pathname.startsWith("/c/") || url.pathname.startsWith("/rdvclient"))
       ? join(racine, "public", "client.html")
       : join(racine, "public", normalize(url.pathname === "/" ? "/index.html" : url.pathname).replace(/^(\.\.[/\\])+/, ""));
     const contenu = await readFile(fichier);
