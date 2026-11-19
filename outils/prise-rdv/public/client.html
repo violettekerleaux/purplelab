@@ -73,7 +73,8 @@ h1{font-size:22px;line-height:1.25;font-weight:500;margin:6px 0 2px}
 .mode[aria-pressed="true"] .coche::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--violet)}
 .mode-aide{font-size:13px;margin:0 0 14px;color:var(--texte)}
 .mode-aide b{color:var(--violet);font-weight:500}
-.c.visio-seul{border:1px dashed var(--lilas);color:#9C8BC9;background:#FBF9FF;cursor:not-allowed;font-weight:400}
+.c.visio-seul small{display:block;font-size:10.5px;opacity:.8;line-height:1.1}
+.c.visio-seul{line-height:1.15;flex-direction:column;gap:0;border:1px dashed var(--lilas);color:#9C8BC9;background:#FBF9FF;cursor:not-allowed;font-weight:400}
 .l-trajet{border:1px dashed var(--lilas);background:#FBF9FF}
 .l-visio{background:var(--lilas);border:1px solid var(--violet)}
 .etiq{font-size:11px;border-radius:99px;padding:1px 8px;margin-left:6px;font-weight:500;white-space:nowrap}
@@ -149,6 +150,7 @@ textarea{min-height:64px;resize:vertical}
   .h{font-size:11px;padding-right:2px}
   .c{height:36px;font-size:0}
   .c::after{content:attr(data-court);font-size:11px}
+  .c.visio-seul small{display:none}
   .jt .js{font-size:10px}
   .jt .jl{font-size:10px}
   .jt .long{display:none}
@@ -197,7 +199,7 @@ textarea{min-height:64px;resize:vertical}
         <span><i class="l-pris"></i>Indisponible</span>
         <span><i class="l-choisi"></i>Présentiel choisi</span>
         <span><i class="l-visio"></i>Visio choisie</span>
-        <span id="leg-trajet"><i class="l-trajet"></i>Visio seulement (pas d'heure libre avant pour le trajet)</span>
+        <span id="leg-trajet"><i class="l-trajet"></i>Zone tampon pour le déplacement (possible en visio)</span>
         <button class="lien" id="copier" type="button">Copier mes disponibilités de la semaine</button>
       </div>
       <div class="resume">
@@ -395,10 +397,10 @@ textarea{min-height:64px;resize:vertical}
           b.className = "c pris"; b.disabled = true; b.textContent = "Indisponible"; b.dataset.court = "–";
           b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(h)} : indisponible`);
         } else if (mode === "presentiel" && !choix.has(c.debut) && !presentielOk(j, c)) {
-          b.className = "c visio-seul"; b.textContent = "Visio seulement"; b.dataset.court = "V";
-          b.title = "Pas d'heure libre juste avant pour le trajet : ce créneau est possible en visio.";
-          b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(c.heure)} : possible en visio seulement`);
-          b.onclick = () => { $("mode-aide").innerHTML = "Ce créneau n'a pas d'heure libre juste avant pour le trajet. <b>Passez en Visio</b> pour le choisir."; };
+          b.className = "c visio-seul"; b.innerHTML = "Zone tampon<small>déplacement</small>"; b.dataset.court = "trajet";
+          b.title = "Zone tampon : temps de déplacement de Purple Lab. Ce créneau reste possible en visio.";
+          b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(c.heure)} : zone tampon pour le déplacement, possible en visio`);
+          b.onclick = () => { $("mode-aide").innerHTML = "Ce créneau est une zone tampon pour notre déplacement. <b>Passez en Visio</b> pour le choisir."; };
         } else {
           const pris = choix.has(c.debut);
           const m = pris ? choix.get(c.debut).mode : "";
