@@ -74,6 +74,14 @@ Récupérer le lien de chaque agenda Google (une action par ligne) :
 4. Descendre jusqu'à « Adresse secrète au format iCal » et copier le lien.
 5. Recommencer pour chaque agenda.
 
+Agenda iPhone (iCloud), une action par ligne :
+1. Sur l'iPhone, ouvrir Calendrier, puis « Calendriers » en bas.
+2. Toucher le (i) à droite de l'agenda iCloud.
+3. Activer « Calendrier public », puis « Partager le lien » > Copier.
+4. Le lien commence par webcal:// : le coller tel quel, la page s'en occupe.
+Attention : ce lien est difficile à deviner mais n'est pas protégé, il ne faut le donner à personne d'autre.
+Si l'agenda de l'iPhone est en fait ton Google Agenda (compte Gmail ajouté sur l'iPhone), il est déjà pris en compte.
+
 Agenda Outlook / Microsoft 365 : Paramètres > Calendrier > Calendriers partagés > « Publier un calendrier » > choisir « Peut afficher toutes les informations » > copier le lien ICS.
 
 Les mettre dans Netlify :

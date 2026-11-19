@@ -15,7 +15,8 @@ export const modeTest = () => env("RDV_MODE_TEST") === "1";
 
 // Renvoie la liste des plages occupées [{debut: Date, fin: Date}] entre `de` et `a`.
 export async function plagesOccupees(de, a) {
-  const urls = (env("AGENDA_ICS_URL") || "").split(/[\s,]+/).filter(Boolean);
+  // Les liens iPhone / iCloud commencent par webcal:// : c'est du https.
+  const urls = (env("AGENDA_ICS_URL") || "").split(/[\s,]+/).filter(Boolean).map((u) => u.replace(/^webcals?:\/\//i, "https://"));
   if (!urls.length) throw new Error("AGENDA_ICS_URL n'est pas renseignée");
   const monEmail = (env("AGENDA_EMAIL") || "").toLowerCase();
   const toutes = [];
