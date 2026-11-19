@@ -73,6 +73,8 @@ h1{font-size:22px;line-height:1.25;font-weight:500;margin:6px 0 2px}
 .mode[aria-pressed="true"] .coche::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--violet)}
 .mode-aide{font-size:13px;margin:0 0 14px;color:var(--texte)}
 .mode-aide b{color:var(--violet);font-weight:500}
+.c.visio-seul{border:1px dashed var(--lilas);color:#9C8BC9;background:#FBF9FF;cursor:not-allowed;font-weight:400}
+.l-trajet{border:1px dashed var(--lilas);background:#FBF9FF}
 .l-visio{background:var(--lilas);border:1px solid var(--violet)}
 .etiq{font-size:11px;border-radius:99px;padding:1px 8px;margin-left:6px;font-weight:500;white-space:nowrap}
 .etiq.presentiel{background:var(--violet);color:#fff}
@@ -195,6 +197,7 @@ textarea{min-height:64px;resize:vertical}
         <span><i class="l-pris"></i>Indisponible</span>
         <span><i class="l-choisi"></i>Présentiel choisi</span>
         <span><i class="l-visio"></i>Visio choisie</span>
+        <span id="leg-trajet"><i class="l-trajet"></i>Visio seulement (pas d'heure libre avant pour le trajet)</span>
         <button class="lien" id="copier" type="button">Copier mes disponibilités de la semaine</button>
       </div>
       <div class="resume">
@@ -259,7 +262,23 @@ textarea{min-height:64px;resize:vertical}
   const choix = new Map(); // debut ISO -> {iso, heure, fin, mode}
   let mode = "presentiel";
   const NOMS = { presentiel: "Présentiel", visio: "Visio" };
-  document.querySelectorAll(".mode").forEach((b) => (b.onclick = () => { mode = b.dataset.mode; document.querySelectorAll(".mode").forEach((x) => x.setAttribute("aria-pressed", x === b)); $("mode-aide").innerHTML = `Les cases que vous cliquez seront réservées en <b>${mode === "visio" ? "visio" : "présentiel"}</b>. Changez de type à tout moment.`; }));
+  // Présentiel possible si l'heure d'avant est libre (trajet), ou si l'on prolonge un présentiel déjà choisi.
+  const precedent = (iso, c) => (jours[iso] || []).find((x) => x.fin === c.heure);
+  function presentielOk(iso, c) {
+    const p = precedent(iso, c);
+    const pc = p && choix.get(p.debut);
+    if (pc) return pc.mode === "presentiel" && presentielOk(iso, p);
+    return !!c.trajetLibre;
+  }
+  function nettoyerChoix() {
+    let change = true, retires = 0;
+    while (change) {
+      change = false;
+      for (const [k, c] of choix) if (c.mode === "presentiel" && !presentielOk(c.iso, c)) { choix.delete(k); change = true; retires++; }
+    }
+    return retires;
+  }
+  document.querySelectorAll(".mode").forEach((b) => (b.onclick = () => { mode = b.dataset.mode; document.querySelectorAll(".mode").forEach((x) => x.setAttribute("aria-pressed", x === b)); $("mode-aide").innerHTML = `Les cases que vous cliquez seront réservées en <b>${mode === "visio" ? "visio" : "présentiel"}</b>. Changez de type à tout moment.`; if (client) dessiner(); }));
 
   async function charger(garder) {
     $("etat").hidden = false;
@@ -359,7 +378,11 @@ textarea{min-height:64px;resize:vertical}
       b.innerHTML = `<span class="js">${SEM[i]}</span><span class="jn">${d.getUTCDate()}</span><span class="jl">${!jours[j] ? "–" : !libres.length ? "complet" : tous ? "tout retirer" : '<span class="long">toute la </span>journée'}</span>`;
       b.title = libres.length ? (tous ? "Retirer toute la journée" : "Choisir toute la journée") : "";
       b.setAttribute("aria-label", fmtJour.format(d) + (libres.length ? (tous ? ", retirer toute la journée" : ", choisir toute la journée") : ", complet"));
-      b.onclick = () => { libres.forEach((c) => (tous ? choix.delete(c.debut) : choix.set(c.debut, { ...c, iso: j, mode }))); majChoix(); };
+      b.onclick = () => {
+        if (tous) libres.forEach((c) => choix.delete(c.debut));
+        else for (const c of libres) if (mode === "visio" || presentielOk(j, c)) choix.set(c.debut, { ...c, iso: j, mode });
+        majChoix();
+      };
       g.appendChild(b);
     });
     for (const h of heures) {
@@ -371,6 +394,11 @@ textarea{min-height:64px;resize:vertical}
         if (!c || !c.libre) {
           b.className = "c pris"; b.disabled = true; b.textContent = "Indisponible"; b.dataset.court = "–";
           b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(h)} : indisponible`);
+        } else if (mode === "presentiel" && !choix.has(c.debut) && !presentielOk(j, c)) {
+          b.className = "c visio-seul"; b.textContent = "Visio seulement"; b.dataset.court = "V";
+          b.title = "Pas d'heure libre juste avant pour le trajet : ce créneau est possible en visio.";
+          b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(c.heure)} : possible en visio seulement`);
+          b.onclick = () => { $("mode-aide").innerHTML = "Ce créneau n'a pas d'heure libre juste avant pour le trajet. <b>Passez en Visio</b> pour le choisir."; };
         } else {
           const pris = choix.has(c.debut);
           const m = pris ? choix.get(c.debut).mode : "";
@@ -393,7 +421,7 @@ textarea{min-height:64px;resize:vertical}
     majCote();
   }
 
-  function majChoix() { dessiner(); }
+  function majChoix() { nettoyerChoix(); dessiner(); }
 
   function blocsChoisis() {
     const tri = [...choix.values()].sort((a, b) => a.debut.localeCompare(b.debut));

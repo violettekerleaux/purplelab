@@ -19,6 +19,7 @@ const DEFAUTS = {
   horizonJours: 60,
   maxCreneaux: 20,
   demanderAdresse: true,
+  trajetMinutes: 60,
 };
 
 export const empreinte = (cle) => createHash("sha256").update(String(cle)).digest("hex");
@@ -41,6 +42,12 @@ export function grilleClient({ client, occupe, reservations = [], maintenant = n
     ...occupe.map((o) => ({ debut: +o.debut - marge, fin: +o.fin + marge })),
     ...reservations.map((r) => ({ debut: +new Date(r.debut) - marge, fin: +new Date(r.fin) + marge })),
   ];
+  // Pour le trajet, seuls les vrais rendez-vous comptent (sans la marge).
+  const brut = [
+    ...occupe.map((o) => ({ debut: +o.debut, fin: +o.fin })),
+    ...reservations.map((r) => ({ debut: +new Date(r.debut), fin: +new Date(r.fin) })),
+  ];
+  const trajet = (client.trajetMinutes || 0) * 60000;
   const jours = {};
   let jour = DateTime.fromJSDate(maintenant).setZone(z).startOf("day");
   for (let i = 0; i <= client.horizonJours; i++, jour = jour.plus({ days: 1 })) {
@@ -55,7 +62,9 @@ export function grilleClient({ client, occupe, reservations = [], maintenant = n
       for (let s = jour.set({ hour: hd, minute: md }); s.plus({ minutes: client.pasMinutes }) <= finPlage; s = s.plus({ minutes: client.pasMinutes })) {
         const f = s.plus({ minutes: client.pasMinutes });
         const libre = !ferme && s >= debutMin && !bloque.some((b) => b.debut < +f && b.fin > +s);
-        cases.push({ debut: s.toUTC().toISO(), heure: s.toFormat("HH:mm"), fin: f.toFormat("HH:mm"), libre });
+        // trajetLibre : l'heure qui précède est libre, donc présentiel possible.
+        const trajetLibre = libre && !brut.some((b) => b.debut < +s && b.fin > +s - trajet);
+        cases.push({ debut: s.toUTC().toISO(), heure: s.toFormat("HH:mm"), fin: f.toFormat("HH:mm"), libre, trajetLibre });
       }
     }
     jours[iso] = cases;
@@ -95,5 +104,6 @@ export const profilPublic = (c) => ({
   pasMinutes: c.pasMinutes,
   maxCreneaux: c.maxCreneaux,
   demanderAdresse: c.demanderAdresse,
+  trajetMinutes: c.trajetMinutes,
   fuseau: c.fuseau,
 });
