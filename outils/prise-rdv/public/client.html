@@ -6,10 +6,10 @@
 <title>Réservation privée · Purple Lab</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<link rel="icon" href="/assets/logo.svg">
+<link rel="icon" href="/assets/rdv/logo.svg">
 <style>
-@font-face{font-family:Inter;src:url(/assets/Inter-Regular.woff) format("woff");font-weight:400;font-display:swap}
-@font-face{font-family:Inter;src:url(/assets/Inter-Medium.woff) format("woff");font-weight:500;font-display:swap}
+@font-face{font-family:Inter;src:url(/assets/rdv/Inter-Regular.woff) format("woff");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url(/assets/rdv/Inter-Medium.woff) format("woff");font-weight:500;font-display:swap}
 :root{
   --violet:#7C4DE3; --violet-f:#6A3DD0; --lilas:#CEB6FE; --lilas-c:#F1EBFD; --fond:#F2F2F2;
   --texte:#2F2B3A; --doux:#6B6778; --trait:#E4E1EA; --pris:#EDEBF0; --blanc:#fff; --erreur:#B3261E;
@@ -173,7 +173,7 @@ body.consult .c:not(.pris):not(.visio-seul):hover{background:var(--blanc)}
 <body>
 <main class="page">
   <header class="tete">
-    <a href="https://www.purplelab.fr" aria-label="Purple Lab"><img src="/assets/logo.svg" alt="Purple Lab" width="92" height="41"></a>
+    <a href="https://www.purplelab.fr" aria-label="Purple Lab"><img src="/assets/rdv/logo.svg" alt="Purple Lab" width="92" height="41"></a>
     <div class="bloc">
       <span class="tag" id="tag">Espace privé</span>
       <h1 id="titre">Planifier l'enquête sur site</h1>
@@ -254,7 +254,7 @@ body.consult .c:not(.pris):not(.visio-seul):hover{background:var(--blanc)}
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
-  const cle = decodeURIComponent((location.pathname.match(/\/c\/([^/?#]+)/) || [])[1] || new URLSearchParams(location.search).get("cle") || "");
+  const cle = decodeURIComponent((location.pathname.match(/\/(?:c|rdvclient)\/([^/?#]+)/) || [])[1] || new URLSearchParams(location.search).get("cle") || "");
   const fmtJour = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
   const fmtCourt = new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
   const fmtJM = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" });

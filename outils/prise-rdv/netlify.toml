@@ -36,3 +36,16 @@
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
     Referrer-Policy = "no-referrer"
+
+# Même page, servie aussi via purplelab.fr/rdvclient/<clé> (proxy depuis le site principal)
+[[redirects]]
+  from = "/rdvclient/*"
+  to = "/client.html"
+  status = 200
+
+[[headers]]
+  for = "/rdvclient/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Referrer-Policy = "no-referrer"
+    Cache-Control = "no-store"
