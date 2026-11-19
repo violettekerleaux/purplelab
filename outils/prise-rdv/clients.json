@@ -19,6 +19,7 @@
       "nom": "TF1",
       "margeMinutes": 0,
       "consultation": true,
+      "dateFin": "2026-12-18",
       "emailInvitation": "violette@purplelab.fr",
       "titre": "Disponibilités de Purple Lab",
       "description": "Les cases violettes sont libres dans mon agenda. Choisissez celles qui vous conviennent et envoyez-moi une invitation depuis votre agenda.",

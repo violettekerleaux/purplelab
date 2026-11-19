@@ -53,6 +53,7 @@ export function grilleClient({ client, occupe, reservations = [], maintenant = n
   for (let i = 0; i <= client.horizonJours; i++, jour = jour.plus({ days: 1 })) {
     if (!client.joursOuvres.includes(jour.weekday)) continue;
     const iso = jour.toISODate();
+    if (client.dateFin && iso > client.dateFin) break; // dernier jour affiché (ex. "2026-12-18")
     const ferme = client.joursFermes.includes(iso);
     const cases = [];
     for (const p of client.plages) {
