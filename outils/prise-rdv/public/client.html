@@ -199,7 +199,7 @@ textarea{min-height:64px;resize:vertical}
         <span><i class="l-pris"></i>Indisponible</span>
         <span><i class="l-choisi"></i>Présentiel choisi</span>
         <span><i class="l-visio"></i>Visio choisie</span>
-        <span id="leg-trajet"><i class="l-trajet"></i>Zone tampon pour le déplacement (possible en visio)</span>
+        <span id="leg-trajet"><i class="l-trajet"></i>Zone tampon pour le déplacement (non réservable)</span>
         <button class="lien" id="copier" type="button">Copier mes disponibilités de la semaine</button>
       </div>
     </section>
@@ -260,27 +260,23 @@ textarea{min-height:64px;resize:vertical}
   const choix = new Map(); // debut ISO -> {iso, heure, fin, mode}
   let mode = "presentiel";
   const NOMS = { presentiel: "Présentiel", visio: "Visio" };
-  // Présentiel possible si l'heure d'avant et l'heure d'après sont libres (trajet),
-  // ou si l'on prolonge un présentiel déjà choisi.
-  const precedent = (iso, c) => (jours[iso] || []).find((x) => x.fin === c.heure);
-  const suivant = (iso, c) => (jours[iso] || []).find((x) => x.heure === c.fin);
-  function avantOk(iso, c) {
-    const p = precedent(iso, c), pc = p && choix.get(p.debut);
-    if (pc) return pc.mode === "presentiel" && avantOk(iso, p);
-    return !!c.trajetAvant;
-  }
-  function apresOk(iso, c) {
-    const n = suivant(iso, c), nc = n && choix.get(n.debut);
-    if (nc) return nc.mode === "presentiel" && apresOk(iso, n);
-    return !!c.trajetApres;
-  }
-  const presentielOk = (iso, c) => avantOk(iso, c) && apresOk(iso, c);
-  function nettoyerChoix() {
-    let change = true, retires = 0;
-    while (change) {
-      change = false;
-      for (const [k, c] of choix) if (c.mode === "presentiel" && !presentielOk(c.iso, c)) { choix.delete(k); change = true; retires++; }
+  // Trajet : pas de visio dans l'heure avant ou après un présentiel choisi.
+  const PAS = () => (client?.pasMinutes || 60) * 60000;
+  const TRAJET = () => (client?.trajetMinutes || 0) * 60000;
+  function proche(c, autreMode) {
+    const d = +new Date(c.debut), f = d + PAS();
+    for (const [k, x] of choix) {
+      if (k === c.debut || x.mode !== autreMode) continue;
+      const xd = +new Date(k), xf = xd + PAS();
+      if (xd < f + TRAJET() && xf > d - TRAJET()) return true;
     }
+    return false;
+  }
+  // Une case est une zone tampon dynamique en visio si un présentiel choisi est à moins d'une heure.
+  const tamponPour = (c, m) => (m === "visio" ? proche(c, "presentiel") : proche(c, "visio"));
+  function nettoyerChoix() {
+    let retires = 0;
+    for (const [k, c] of [...choix]) if (c.mode === "visio" && proche(c, "presentiel")) { choix.delete(k); retires++; }
     return retires;
   }
   document.querySelectorAll(".mode").forEach((b) => (b.onclick = () => { mode = b.dataset.mode; document.querySelectorAll(".mode").forEach((x) => x.setAttribute("aria-pressed", x === b)); $("mode-aide").innerHTML = `Les cases que vous cliquez seront réservées en <b>${mode === "visio" ? "visio" : "présentiel"}</b>. Changez de type à tout moment.`; if (client) dessiner(); }));
@@ -385,7 +381,7 @@ textarea{min-height:64px;resize:vertical}
       b.setAttribute("aria-label", fmtJour.format(d) + (libres.length ? (tous ? ", retirer toute la journée" : ", choisir toute la journée") : ", complet"));
       b.onclick = () => {
         if (tous) libres.forEach((c) => choix.delete(c.debut));
-        else for (const c of libres) if (mode === "visio" || presentielOk(j, c)) choix.set(c.debut, { ...c, iso: j, mode });
+        else for (const c of libres) if (!tamponPour(c, mode)) choix.set(c.debut, { ...c, iso: j, mode });
         majChoix();
       };
       g.appendChild(b);
@@ -396,14 +392,14 @@ textarea{min-height:64px;resize:vertical}
         const c = (jours[j] || []).find((x) => x.heure === h);
         const b = document.createElement("button");
         b.type = "button";
-        if (!c || !c.libre) {
+        if (c && (c.tampon || (!choix.has(c.debut) && c.libre && tamponPour(c, mode)))) {
+          b.className = "c visio-seul"; b.innerHTML = "Zone tampon<small>déplacement</small>"; b.dataset.court = "trajet";
+          b.title = "Zone tampon : temps de déplacement de Purple Lab.";
+          b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(c.heure)} : zone tampon pour le déplacement, non réservable`);
+          b.onclick = () => { $("mode-aide").innerHTML = "Ce créneau est une <b>zone tampon</b> : Purple Lab a besoin d'une heure pour se déplacer avant et après chaque rendez-vous sur place."; };
+        } else if (!c || !c.libre) {
           b.className = "c pris"; b.disabled = true; b.textContent = "Indisponible"; b.dataset.court = "–";
           b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(h)} : indisponible`);
-        } else if (mode === "presentiel" && !choix.has(c.debut) && !presentielOk(j, c)) {
-          b.className = "c visio-seul"; b.innerHTML = "Zone tampon<small>déplacement</small>"; b.dataset.court = "trajet";
-          b.title = "Zone tampon : temps de déplacement de Purple Lab. Ce créneau reste possible en visio.";
-          b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(c.heure)} : zone tampon pour le déplacement, possible en visio`);
-          b.onclick = () => { $("mode-aide").innerHTML = "Ce créneau est une zone tampon pour nos déplacements (une heure avant et après chaque rendez-vous sur place). <b>Passez en Visio</b> pour le choisir."; };
         } else {
           const pris = choix.has(c.debut);
           const m = pris ? choix.get(c.debut).mode : "";
@@ -412,7 +408,12 @@ textarea{min-height:64px;resize:vertical}
           b.dataset.court = pris ? (m === "visio" ? "✓ V" : "✓ P") : "libre";
           b.setAttribute("aria-pressed", pris);
           b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(c.heure)} à ${hh(c.fin)} : libre`);
-          b.onclick = () => { pris && m === mode ? choix.delete(c.debut) : choix.set(c.debut, { ...c, iso: j, mode }); majChoix(); };
+          b.onclick = () => {
+            if (pris && m === mode) choix.delete(c.debut);
+            else if (tamponPour(c, mode)) { $("mode-aide").innerHTML = "Impossible ici en présentiel : il faut une heure de trajet sans visio avant et après."; return; }
+            else choix.set(c.debut, { ...c, iso: j, mode });
+            majChoix();
+          };
         }
         g.appendChild(b);
       });

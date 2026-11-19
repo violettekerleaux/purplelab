@@ -17,6 +17,7 @@
       "id": "tf1",
       "cleSha256": "2eead46248527bc25b155ffbeebb2ddb98234428f9d4d307c8e9509d6bb420ed",
       "nom": "TF1",
+      "margeMinutes": 0,
       "adresse": "",
       "contact": {
         "prenom": "Valérie",

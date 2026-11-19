@@ -46,34 +46,28 @@ export default async (req) => {
     console.error("client-reserver/agenda", e);
     return reponse({ erreur: "Impossible de vérifier l'agenda. Réessayez dans un instant." }, 503, prive);
   }
-  const libres = new Set(Object.values(jours).flat().filter((c) => c.libre).map((c) => c.debut));
-  const pris = choix.filter((c) => !libres.has(c.debut)).map((c) => c.debut);
+  const parDebut = new Map(Object.values(jours).flat().map((c) => [c.debut, c]));
+  if (choix.some((c) => parDebut.get(c.debut)?.tampon))
+    return reponse({ erreur: "Un des créneaux choisis est une zone tampon réservée au déplacement de Purple Lab. Choisissez-en un autre.", code: "trajet" }, 400, prive);
+  const pris = choix.filter((c) => !parDebut.get(c.debut)?.libre).map((c) => c.debut);
   if (pris.length) return reponse({ erreur: "Un des créneaux choisis vient d'être pris. La grille a été mise à jour.", code: "pris", pris }, 409, prive);
 
-  // Présentiel : l'heure avant et l'heure après chaque rendez-vous doivent rester libres pour le trajet,
-  // y compris par rapport aux autres créneaux demandés ici.
-  const parDebut = new Map(Object.values(jours).flat().map((c) => [c.debut, c]));
-  const choisis = new Set(choix.map((c) => c.debut));
+  // Présentiel : pas de visio dans l'heure avant ou après (temps de trajet).
   const blocsBruts = MODES.flatMap((m) =>
     enBlocs(choix.filter((c) => c.mode === m).map((c) => c.debut), client.pasMinutes).map((b) => ({ ...b, mode: m, uid: `${randomUUID()}@purplelab.fr` }))
   ).sort((a, b) => a.debut.localeCompare(b.debut));
   const trajetMs = (client.trajetMinutes || 0) * 60000;
-  const pasMs = client.pasMinutes * 60000;
+  const visios = blocsBruts.filter((x) => x.mode === "visio");
   for (const b of blocsBruts.filter((x) => x.mode === "presentiel")) {
-    const avant = new Date(+new Date(b.debut) - trajetMs).toISOString();
-    const dernier = new Date(+new Date(b.fin) - pasMs).toISOString();
-    const apres = new Date(+new Date(b.fin) + trajetMs).toISOString();
-    const autreChoisi = [...choisis].some((d) => (d >= avant && d < b.debut) || (d >= b.fin && d < apres));
-    if (!parDebut.get(b.debut)?.trajetAvant || !parDebut.get(dernier)?.trajetApres || autreChoisi)
-      return reponse({ erreur: "En présentiel, il faut une heure libre avant et après le rendez-vous pour le trajet. Choisissez un autre créneau ou la visio.", code: "trajet" }, 400, prive);
+    const d = +new Date(b.debut) - trajetMs, f = +new Date(b.fin) + trajetMs;
+    if (visios.some((v) => +new Date(v.debut) < f && +new Date(v.fin) > d))
+      return reponse({ erreur: "En présentiel, il faut une heure libre avant et après le rendez-vous pour le trajet : pas de visio juste avant ou juste après.", code: "trajet" }, 400, prive);
   }
   const blocs = blocsBruts;
   const enregistres = [];
   for (const b of blocs) {
-    const debutBloque = b.mode === "presentiel" ? new Date(+new Date(b.debut) - trajetMs).toISOString() : b.debut;
-    const finBloquee = b.mode === "presentiel" ? new Date(+new Date(b.fin) + trajetMs).toISOString() : b.fin;
-    b.cle = debutBloque;
-    const ok = await enregistrerReservation({ uid: b.uid, debut: debutBloque, fin: finBloquee, rdvFin: b.fin, rdvDebut: b.debut, mode: b.mode, client: client.id, prenom, nom, email, creeLe: new Date().toISOString() });
+    b.cle = b.debut;
+    const ok = await enregistrerReservation({ uid: b.uid, debut: b.debut, fin: b.fin, mode: b.mode, client: client.id, prenom, nom, email, creeLe: new Date().toISOString() });
     if (!ok) {
       for (const e of enregistres) await supprimerReservation(e.cle).catch(() => {});
       return reponse({ erreur: "Un des créneaux choisis vient d'être pris. La grille a été mise à jour.", code: "pris" }, 409, prive);

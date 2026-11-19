@@ -42,7 +42,7 @@ export function grilleClient({ client, occupe, reservations = [], maintenant = n
     ...occupe.map((o) => ({ debut: +o.debut - marge, fin: +o.fin + marge })),
     ...reservations.map((r) => ({ debut: +new Date(r.debut) - marge, fin: +new Date(r.fin) + marge })),
   ];
-  // Pour le trajet, seuls les vrais rendez-vous comptent (sans la marge).
+  // Pour la zone tampon (trajet), seuls les vrais rendez-vous comptent (sans la marge).
   const brut = [
     ...occupe.map((o) => ({ debut: +o.debut, fin: +o.fin })),
     ...reservations.map((r) => ({ debut: +new Date(r.debut), fin: +new Date(r.fin) })),
@@ -61,12 +61,12 @@ export function grilleClient({ client, occupe, reservations = [], maintenant = n
       const finPlage = jour.set({ hour: hf, minute: mf });
       for (let s = jour.set({ hour: hd, minute: md }); s.plus({ minutes: client.pasMinutes }) <= finPlage; s = s.plus({ minutes: client.pasMinutes })) {
         const f = s.plus({ minutes: client.pasMinutes });
-        const libre = !ferme && s >= debutMin && !bloque.some((b) => b.debut < +f && b.fin > +s);
-        // Présentiel : il faut une heure libre avant (pour venir) et après (pour repartir).
-        // trajetAvant / trajetApres : rien dans l'agenda pendant l'heure qui précède / qui suit.
-        const trajetAvant = libre && !brut.some((b) => b.debut < +s && b.fin > +s - trajet);
-        const trajetApres = libre && !brut.some((b) => b.debut < +f + trajet && b.fin > +f);
-        cases.push({ debut: s.toUTC().toISO(), heure: s.toFormat("HH:mm"), fin: f.toFormat("HH:mm"), libre, trajetAvant, trajetApres });
+        const dispo = !ferme && s >= debutMin && !bloque.some((b) => b.debut < +f && b.fin > +s);
+        // Zone tampon : une heure avant ou après un rendez-vous de l'agenda, pour le trajet.
+        // Elle n'est réservable ni en présentiel ni en visio.
+        const tampon = dispo && brut.some((b) => b.debut < +f + trajet && b.fin > +s - trajet);
+        const libre = dispo && !tampon;
+        cases.push({ debut: s.toUTC().toISO(), heure: s.toFormat("HH:mm"), fin: f.toFormat("HH:mm"), libre, tampon });
       }
     }
     jours[iso] = cases;
