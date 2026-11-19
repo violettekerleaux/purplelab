@@ -9,7 +9,7 @@ import liste from "../clients.json" with { type: "json" };
 const DEFAUTS = {
   titre: "Planifier l'enquête sur site",
   description:
-    "Choisissez les créneaux où Purple Lab peut venir dans vos locaux. Les cases violettes sont libres dans notre agenda\u00a0: comparez-les avec vos disponibilités, cochez celles qui vous conviennent, puis validez.",
+    "Les cases violettes sont libres dans notre agenda\u00a0: comparez-les avec vos disponibilités. Choisissez «\u00a0Présentiel\u00a0» (dans vos locaux) ou «\u00a0Visio\u00a0», cliquez sur les créneaux qui vous conviennent, puis validez.",
   lieu: "Dans vos locaux",
   adresse: "",
   pasMinutes: 60,

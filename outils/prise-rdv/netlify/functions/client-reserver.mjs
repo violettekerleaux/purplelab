@@ -28,7 +28,10 @@ export default async (req) => {
   const telephone = nettoyer(d.telephone, 40);
   const adresse = (client.demanderAdresse && nettoyer(d.adresse, 300)) || client.adresse || "";
   const message = nettoyerTexte(d.message);
-  const choix = Array.isArray(d.creneaux) ? d.creneaux.map((c) => nettoyer(c, 40)).filter(Boolean) : [];
+  const MODES = ["presentiel", "visio"];
+  const choix = (Array.isArray(d.creneaux) ? d.creneaux : [])
+    .map((c) => (typeof c === "string" ? { debut: c, mode: "presentiel" } : { debut: nettoyer(c?.debut, 40), mode: MODES.includes(c?.mode) ? c.mode : "presentiel" }))
+    .filter((c) => c.debut);
 
   if (!prenom || !nom) return reponse({ erreur: "Merci d'indiquer votre prénom et votre nom." }, 400, prive);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return reponse({ erreur: "Adresse e-mail invalide." }, 400, prive);
@@ -44,10 +47,12 @@ export default async (req) => {
     return reponse({ erreur: "Impossible de vérifier l'agenda. Réessayez dans un instant." }, 503, prive);
   }
   const libres = new Set(Object.values(jours).flat().filter((c) => c.libre).map((c) => c.debut));
-  const pris = choix.filter((c) => !libres.has(c));
+  const pris = choix.filter((c) => !libres.has(c.debut)).map((c) => c.debut);
   if (pris.length) return reponse({ erreur: "Un des créneaux choisis vient d'être pris. La grille a été mise à jour.", code: "pris", pris }, 409, prive);
 
-  const blocs = enBlocs(choix, client.pasMinutes).map((b) => ({ ...b, uid: `${randomUUID()}@purplelab.fr` }));
+  const blocs = MODES.flatMap((m) =>
+    enBlocs(choix.filter((c) => c.mode === m).map((c) => c.debut), client.pasMinutes).map((b) => ({ ...b, mode: m, uid: `${randomUUID()}@purplelab.fr` }))
+  ).sort((a, b) => a.debut.localeCompare(b.debut));
   const enregistres = [];
   for (const b of blocs) {
     const ok = await enregistrerReservation({ uid: b.uid, debut: b.debut, fin: b.fin, client: client.id, prenom, nom, email, creeLe: new Date().toISOString() });
@@ -65,11 +70,13 @@ export default async (req) => {
   const quand = (b) => {
     const d0 = DateTime.fromISO(b.debut).setZone(z).setLocale("fr");
     const f0 = DateTime.fromISO(b.fin).setZone(z);
-    return `${d0.toFormat("cccc d LLLL")} de ${d0.toFormat("H'h'mm")} à ${f0.toFormat("H'h'mm")}`.replace(/h00/g, "h");
+    return `${d0.toFormat("cccc d LLLL")} de ${d0.toFormat("H'h'mm")} à ${f0.toFormat("H'h'mm")}`.replace(/h00/g, "h") + (b.mode === "visio" ? " (visio)" : " (présentiel)");
   };
   const listeTexte = blocs.map((b) => `• ${quand(b)}`).join("\n");
   const listeHtml = blocs.map((b) => `<li style="margin:2px 0">${html(quand(b))}</li>`).join("");
-  const lieu = adresse ? `${client.nom}, ${adresse}` : client.nom;
+  const lieuSite = adresse ? `${client.nom}, ${adresse}` : client.nom;
+  const lieuVisio = client.lienVisio || "Visioconférence (le lien vous sera envoyé par Purple Lab)";
+  const lieuDe = (b) => (b.mode === "visio" ? lieuVisio : lieuSite);
   const qui = `${prenom} ${nom} (${client.nom})`;
 
   const mailsPour = (b) => {
@@ -77,13 +84,13 @@ export default async (req) => {
       uid: b.uid,
       debut: new Date(b.debut),
       fin: new Date(b.fin),
-      titre: `Purple Lab sur site · ${client.nom}`,
+      titre: `Purple Lab ${b.mode === "visio" ? "en visio" : "sur site"} · ${client.nom}`,
       description: [
         `Réservé par ${prenom} ${nom}, ${email}${telephone ? `, ${telephone}` : ""}`,
         adresse && `Adresse : ${adresse}`,
         message && `Précisions : ${message}`,
       ].filter(Boolean).join("\n"),
-      lieu,
+      lieu: lieuDe(b),
       organisateur: { nom: nomPurple, email: expediteur },
       invites: [
         { nom: nomPurple, email: destPurple, statut: "ACCEPTED" },
@@ -103,8 +110,8 @@ export default async (req) => {
         to: destPurple,
         replyTo: `${prenom} ${nom} <${email}>`,
         subject: `${client.nom} a réservé : ${quand(b)}${blocs.length > 1 ? ` (${i + 1}/${blocs.length})` : ""}`,
-        text: `${qui} a réservé ${blocs.length > 1 ? "ces créneaux" : "ce créneau"} pour l'enquête sur site :\n${listeTexte}\n\n${email}${telephone ? `\n${telephone}` : ""}${adresse ? `\nAdresse : ${adresse}` : ""}${message ? `\n\nPrécisions :\n${message}` : ""}`,
-        html: gabarit("Nouvelle réservation", `${html(qui)} a réservé pour l'enquête sur site :<ul style="padding-left:18px;margin:8px 0">${listeHtml}</ul>`, ligne("E-mail", email) + ligne("Téléphone", telephone) + ligne("Adresse", adresse) + ligne("Précisions", message), "Réservation client"),
+        text: `${qui} a réservé ${blocs.length > 1 ? "ces créneaux" : "ce créneau"} pour l'enquête :\n${listeTexte}\n\n${email}${telephone ? `\n${telephone}` : ""}${adresse ? `\nAdresse : ${adresse}` : ""}${message ? `\n\nPrécisions :\n${message}` : ""}`,
+        html: gabarit("Nouvelle réservation", `${html(qui)} a réservé pour l'enquête :<ul style="padding-left:18px;margin:8px 0">${listeHtml}</ul>`, ligne("E-mail", email) + ligne("Téléphone", telephone) + ligne("Adresse", adresse) + ligne("Précisions", message), "Réservation client"),
         icalEvent: mailsPour(b),
       });
     }
@@ -121,9 +128,9 @@ export default async (req) => {
         from: `${nomPurple} <${expediteur}>`,
         to: `${prenom} ${nom} <${email}>`,
         replyTo: destPurple,
-        subject: `Purple Lab dans vos locaux : ${quand(b)}${blocs.length > 1 ? ` (${i + 1}/${blocs.length})` : ""}`,
-        text: `Bonjour ${prenom},\n\nC'est noté, Purple Lab viendra dans vos locaux :\n${listeTexte}\n\nL'invitation est jointe pour l'ajouter à votre agenda. Pour déplacer ou annuler, il suffit de répondre à ce mail.\n\nÀ bientôt,\nPurple Lab`,
-        html: gabarit("C'est noté", `Bonjour ${html(prenom)}, Purple Lab viendra dans vos locaux :<ul style="padding-left:18px;margin:8px 0">${listeHtml}</ul>L'invitation est jointe pour l'ajouter à votre agenda. Pour déplacer ou annuler, il suffit de répondre à ce mail.`, ligne("Lieu", lieu), "Réservation confirmée"),
+        subject: `Rendez-vous Purple Lab : ${quand(b)}${blocs.length > 1 ? ` (${i + 1}/${blocs.length})` : ""}`,
+        text: `Bonjour ${prenom},\n\nC'est noté, voici vos rendez-vous avec Purple Lab :\n${listeTexte}\n\nL'invitation est jointe pour l'ajouter à votre agenda. Pour déplacer ou annuler, il suffit de répondre à ce mail.\n\nÀ bientôt,\nPurple Lab`,
+        html: gabarit("C'est noté", `Bonjour ${html(prenom)}, voici vos rendez-vous avec Purple Lab :<ul style="padding-left:18px;margin:8px 0">${listeHtml}</ul>L'invitation est jointe pour l'ajouter à votre agenda. Pour déplacer ou annuler, il suffit de répondre à ce mail.`, ligne("Lieu", lieuSite) + (blocs.some((b) => b.mode === "visio") ? ligne("Visio", lieuVisio) : ""), "Réservation confirmée"),
         icalEvent: mailsPour(b),
       });
     }

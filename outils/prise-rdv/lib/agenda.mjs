@@ -23,7 +23,9 @@ export async function plagesOccupees(de, a) {
   for (const url of urls) {
     const rep = await fetch(url, { headers: { "user-agent": "purplelab-rdv" } });
     if (!rep.ok) throw new Error(`Agenda illisible (${rep.status})`);
-    toutes.push(...lireIcs(await rep.text(), de, a, monEmail));
+    const lues = lireIcs(await rep.text(), de, a, monEmail);
+    console.log(`agenda ${urls.indexOf(url) + 1}/${urls.length} : ${lues.length} plages occupées`);
+    toutes.push(...lues);
   }
   return toutes;
 }
