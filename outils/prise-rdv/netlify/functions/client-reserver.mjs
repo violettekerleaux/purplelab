@@ -50,7 +50,7 @@ export default async (req) => {
   const pris = choix.filter((c) => !libres.has(c.debut)).map((c) => c.debut);
   if (pris.length) return reponse({ erreur: "Un des créneaux choisis vient d'être pris. La grille a été mise à jour.", code: "pris", pris }, 409, prive);
 
-  // Présentiel : l'heure avant chaque rendez-vous doit rester libre pour le trajet,
+  // Présentiel : l'heure avant et l'heure après chaque rendez-vous doivent rester libres pour le trajet,
   // y compris par rapport aux autres créneaux demandés ici.
   const parDebut = new Map(Object.values(jours).flat().map((c) => [c.debut, c]));
   const choisis = new Set(choix.map((c) => c.debut));
@@ -58,18 +58,22 @@ export default async (req) => {
     enBlocs(choix.filter((c) => c.mode === m).map((c) => c.debut), client.pasMinutes).map((b) => ({ ...b, mode: m, uid: `${randomUUID()}@purplelab.fr` }))
   ).sort((a, b) => a.debut.localeCompare(b.debut));
   const trajetMs = (client.trajetMinutes || 0) * 60000;
+  const pasMs = client.pasMinutes * 60000;
   for (const b of blocsBruts.filter((x) => x.mode === "presentiel")) {
     const avant = new Date(+new Date(b.debut) - trajetMs).toISOString();
-    const autreChoisi = [...choisis].some((d) => d >= avant && d < b.debut);
-    if (!parDebut.get(b.debut)?.trajetLibre || autreChoisi)
-      return reponse({ erreur: "En présentiel, il faut une heure libre avant le rendez-vous pour le trajet. Choisissez un autre créneau ou la visio.", code: "trajet" }, 400, prive);
+    const dernier = new Date(+new Date(b.fin) - pasMs).toISOString();
+    const apres = new Date(+new Date(b.fin) + trajetMs).toISOString();
+    const autreChoisi = [...choisis].some((d) => (d >= avant && d < b.debut) || (d >= b.fin && d < apres));
+    if (!parDebut.get(b.debut)?.trajetAvant || !parDebut.get(dernier)?.trajetApres || autreChoisi)
+      return reponse({ erreur: "En présentiel, il faut une heure libre avant et après le rendez-vous pour le trajet. Choisissez un autre créneau ou la visio.", code: "trajet" }, 400, prive);
   }
   const blocs = blocsBruts;
   const enregistres = [];
   for (const b of blocs) {
     const debutBloque = b.mode === "presentiel" ? new Date(+new Date(b.debut) - trajetMs).toISOString() : b.debut;
+    const finBloquee = b.mode === "presentiel" ? new Date(+new Date(b.fin) + trajetMs).toISOString() : b.fin;
     b.cle = debutBloque;
-    const ok = await enregistrerReservation({ uid: b.uid, debut: debutBloque, fin: b.fin, rdvDebut: b.debut, mode: b.mode, client: client.id, prenom, nom, email, creeLe: new Date().toISOString() });
+    const ok = await enregistrerReservation({ uid: b.uid, debut: debutBloque, fin: finBloquee, rdvFin: b.fin, rdvDebut: b.debut, mode: b.mode, client: client.id, prenom, nom, email, creeLe: new Date().toISOString() });
     if (!ok) {
       for (const e of enregistres) await supprimerReservation(e.cle).catch(() => {});
       return reponse({ erreur: "Un des créneaux choisis vient d'être pris. La grille a été mise à jour.", code: "pris" }, 409, prive);

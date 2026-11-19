@@ -264,14 +264,21 @@ textarea{min-height:64px;resize:vertical}
   const choix = new Map(); // debut ISO -> {iso, heure, fin, mode}
   let mode = "presentiel";
   const NOMS = { presentiel: "Présentiel", visio: "Visio" };
-  // Présentiel possible si l'heure d'avant est libre (trajet), ou si l'on prolonge un présentiel déjà choisi.
+  // Présentiel possible si l'heure d'avant et l'heure d'après sont libres (trajet),
+  // ou si l'on prolonge un présentiel déjà choisi.
   const precedent = (iso, c) => (jours[iso] || []).find((x) => x.fin === c.heure);
-  function presentielOk(iso, c) {
-    const p = precedent(iso, c);
-    const pc = p && choix.get(p.debut);
-    if (pc) return pc.mode === "presentiel" && presentielOk(iso, p);
-    return !!c.trajetLibre;
+  const suivant = (iso, c) => (jours[iso] || []).find((x) => x.heure === c.fin);
+  function avantOk(iso, c) {
+    const p = precedent(iso, c), pc = p && choix.get(p.debut);
+    if (pc) return pc.mode === "presentiel" && avantOk(iso, p);
+    return !!c.trajetAvant;
   }
+  function apresOk(iso, c) {
+    const n = suivant(iso, c), nc = n && choix.get(n.debut);
+    if (nc) return nc.mode === "presentiel" && apresOk(iso, n);
+    return !!c.trajetApres;
+  }
+  const presentielOk = (iso, c) => avantOk(iso, c) && apresOk(iso, c);
   function nettoyerChoix() {
     let change = true, retires = 0;
     while (change) {
@@ -400,7 +407,7 @@ textarea{min-height:64px;resize:vertical}
           b.className = "c visio-seul"; b.innerHTML = "Zone tampon<small>déplacement</small>"; b.dataset.court = "trajet";
           b.title = "Zone tampon : temps de déplacement de Purple Lab. Ce créneau reste possible en visio.";
           b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(c.heure)} : zone tampon pour le déplacement, possible en visio`);
-          b.onclick = () => { $("mode-aide").innerHTML = "Ce créneau est une zone tampon pour notre déplacement. <b>Passez en Visio</b> pour le choisir."; };
+          b.onclick = () => { $("mode-aide").innerHTML = "Ce créneau est une zone tampon pour nos déplacements (une heure avant et après chaque rendez-vous sur place). <b>Passez en Visio</b> pour le choisir."; };
         } else {
           const pris = choix.has(c.debut);
           const m = pris ? choix.get(c.debut).mode : "";

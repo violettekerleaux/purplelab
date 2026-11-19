@@ -33,7 +33,7 @@ t("client désactivé → refus", () => {
 t("la grille ne contient que libre/pris, jamais de titre d'évènement", () => {
   const brut = JSON.stringify({ client: profilPublic(client), jours });
   for (const mot of ["Formation EDF", "Séminaire", "Entretiens TF1", "médecin", "cleSha256", client.cleSha256]) assert.ok(!brut.includes(mot), mot);
-  for (const c of Object.values(jours).flat()) assert.deepEqual(Object.keys(c).sort(), ["debut", "fin", "heure", "libre", "trajetLibre"]);
+  for (const c of Object.values(jours).flat()) assert.deepEqual(Object.keys(c).sort(), ["debut", "fin", "heure", "libre", "trajetApres", "trajetAvant"]);
 });
 t("délai de 48 h : rien de libre avant samedi 21 après-midi", () => {
   assert.deepEqual(libres("2026-11-19"), []);
@@ -60,11 +60,19 @@ t("présentiel : il faut 1 h libre avant (mercredi 25, formation jusqu'à 12h)",
   const j = jours["2026-11-25"];
   const c = (h) => j.find((x) => x.heure === h);
   assert.equal(c("13:00").libre, true);
-  assert.equal(c("13:00").trajetLibre, true); // 12h-13h libre
+  assert.equal(c("13:00").trajetAvant, true); // 12h-13h libre
   const j2 = grilleClient({ client, occupe: [{ debut: new Date("2026-12-04T09:00:00Z"), fin: new Date("2026-12-04T09:30:00Z") }], maintenant })["2026-12-04"];
   const d = (h) => j2.find((x) => x.heure === h);
   assert.equal(d("11:00").libre, true);        // réunion 10h-10h30 + marge 30 min : 11h libre
-  assert.equal(d("11:00").trajetLibre, false); // mais le trajet 10h-11h chevauche la réunion
-  assert.equal(d("12:00").trajetLibre, true);
+  assert.equal(d("11:00").trajetAvant, false); // mais le trajet 10h-11h chevauche la réunion
+  assert.equal(d("12:00").trajetAvant, true);
+});
+t("présentiel : il faut aussi 1 h libre après (rendez-vous à 13h30 → 12h impossible, 11h possible)", () => {
+  const j = grilleClient({ client, occupe: [{ debut: new Date("2026-12-04T12:30:00Z"), fin: new Date("2026-12-04T13:30:00Z") }], maintenant })["2026-12-04"];
+  const d = (h) => j.find((x) => x.heure === h);
+  assert.equal(d("12:00").libre, true);        // 12h-13h libre (marge à partir de 13h)
+  assert.equal(d("12:00").trajetApres, false); // mais le trajet 13h-14h chevauche le rendez-vous
+  assert.equal(d("11:00").trajetApres, true);
+  assert.equal(d("11:00").trajetAvant, true);
 });
 console.log(`\n${ok} tests réussis`);

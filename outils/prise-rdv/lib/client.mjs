@@ -62,9 +62,11 @@ export function grilleClient({ client, occupe, reservations = [], maintenant = n
       for (let s = jour.set({ hour: hd, minute: md }); s.plus({ minutes: client.pasMinutes }) <= finPlage; s = s.plus({ minutes: client.pasMinutes })) {
         const f = s.plus({ minutes: client.pasMinutes });
         const libre = !ferme && s >= debutMin && !bloque.some((b) => b.debut < +f && b.fin > +s);
-        // trajetLibre : l'heure qui précède est libre, donc présentiel possible.
-        const trajetLibre = libre && !brut.some((b) => b.debut < +s && b.fin > +s - trajet);
-        cases.push({ debut: s.toUTC().toISO(), heure: s.toFormat("HH:mm"), fin: f.toFormat("HH:mm"), libre, trajetLibre });
+        // Présentiel : il faut une heure libre avant (pour venir) et après (pour repartir).
+        // trajetAvant / trajetApres : rien dans l'agenda pendant l'heure qui précède / qui suit.
+        const trajetAvant = libre && !brut.some((b) => b.debut < +s && b.fin > +s - trajet);
+        const trajetApres = libre && !brut.some((b) => b.debut < +f + trajet && b.fin > +f);
+        cases.push({ debut: s.toUTC().toISO(), heure: s.toFormat("HH:mm"), fin: f.toFormat("HH:mm"), libre, trajetAvant, trajetApres });
       }
     }
     jours[iso] = cases;
