@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Réservation privée · Purple Lab</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="/assets/logo.svg">
+<style>
+@font-face{font-family:Inter;src:url(/assets/Inter-Regular.woff) format("woff");font-weight:400;font-display:swap}
+@font-face{font-family:Inter;src:url(/assets/Inter-Medium.woff) format("woff");font-weight:500;font-display:swap}
+:root{
+  --violet:#7C4DE3; --violet-f:#6A3DD0; --lilas:#CEB6FE; --lilas-c:#F1EBFD; --fond:#F2F2F2;
+  --texte:#2F2B3A; --doux:#6B6778; --trait:#E4E1EA; --pris:#EDEBF0; --blanc:#fff; --erreur:#B3261E;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--fond);color:var(--texte);font:400 14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+.page{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+.tete{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--blanc);border-radius:8px;padding:16px 20px;margin-bottom:12px}
+.tete img{width:92px;height:auto}
+.tete .bloc{flex:1;min-width:240px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--violet);border:1px solid var(--lilas);border-radius:99px;padding:3px 10px;font-weight:500}
+h1{font-size:22px;line-height:1.25;font-weight:500;margin:6px 0 2px}
+.tete p{margin:0;color:var(--doux);font-size:13px;max-width:720px}
+.infos{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;margin-top:8px}
+.infos span{display:flex;align-items:center;gap:6px}
+.infos svg{width:15px;height:15px;stroke:var(--violet);flex:none}
+.corps{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px;align-items:start}
+.panneau{background:var(--blanc);border-radius:8px;padding:16px 18px}
+.semaines{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:thin}
+.sem{flex:none;border:1px solid var(--trait);background:var(--blanc);border-radius:6px;padding:6px 10px;cursor:pointer;text-align:left;line-height:1.3}
+.sem small{display:block;color:var(--doux);font-size:11px}
+.sem b{font-weight:500;font-size:13px}
+.sem.vide{opacity:.55}
+.sem.actif{border-color:var(--violet);background:var(--lilas-c)}
+.sem.actif b{color:var(--violet)}
+.sem .pastille{display:inline-block;min-width:16px;padding:0 5px;border-radius:99px;background:var(--violet);color:#fff;font-size:10px;text-align:center;margin-left:4px;vertical-align:1px}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.nav strong{font-weight:500;font-size:15px}
+.fleche{width:32px;height:32px;border-radius:50%;border:1px solid var(--trait);background:var(--blanc);cursor:pointer;display:grid;place-items:center;flex:none}
+.fleche:hover:not(:disabled){border-color:var(--violet)}
+.fleche:disabled{opacity:.3;cursor:default}
+.grille{display:grid;grid-template-columns:52px repeat(5,minmax(0,1fr));gap:4px}
+.jt{display:flex;flex-direction:column;justify-content:flex-start;border:0;background:none;padding:4px 2px 6px;text-align:center;cursor:pointer;border-radius:6px;line-height:1.25}
+.jt:hover:not(:disabled){background:var(--lilas-c)}
+.jt:disabled{cursor:default}
+.jt .js{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--doux)}
+.jt .jn{display:block;font-size:15px;font-weight:500}
+.jt .jl{display:block;font-size:11px;color:var(--violet)}
+.jt:disabled .jl{color:var(--doux)}
+.h{font-size:12px;color:var(--doux);text-align:right;padding-right:6px;align-self:center}
+.c{height:38px;border-radius:6px;border:1px solid var(--lilas);background:var(--blanc);color:var(--violet);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;padding:0}
+.c:hover{border-color:var(--violet);background:var(--lilas-c)}
+.c.pris{border-color:transparent;color:#A9A5B3;font-weight:400;cursor:default;background:repeating-linear-gradient(135deg,var(--pris) 0 6px,#F5F4F7 6px 12px)}
+.c.choisi,.c.choisi:hover{background:var(--violet);border-color:var(--violet);color:#fff}
+.legende{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--doux);margin-top:12px;align-items:center}
+.legende i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px}
+.l-libre{border:1px solid var(--lilas);background:#fff}
+.l-pris{background:repeating-linear-gradient(135deg,var(--pris) 0 4px,#F5F4F7 4px 8px)}
+.l-choisi{background:var(--violet)}
+.legende .lien{margin-left:auto}
+.lien{background:none;border:0;color:var(--violet);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;font-size:13px}
+.resume{margin-top:12px;border-top:1px solid var(--trait);padding-top:10px}
+.resume h3,.cote h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--doux);font-weight:500;margin:0 0 6px;display:flex;gap:8px;align-items:center}
+.resume h3 b,.cote h3 b{color:var(--violet);font-weight:500}
+.resume ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px 16px;font-size:13px}
+.resume li{padding:3px 0;border-bottom:1px solid var(--trait);display:flex;justify-content:space-between;gap:8px}
+.resume li span:last-child{color:var(--violet);text-align:right}
+.resume li.non span:last-child{color:#A9A5B3}
+.cote{position:sticky;top:12px;display:flex;flex-direction:column;gap:12px}
+.selection{list-style:none;margin:0 0 4px;padding:0;font-size:13px}
+.selection li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--trait)}
+.selection .x{border:0;background:none;color:var(--doux);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px}
+.selection .x:hover{color:var(--erreur)}
+.rien{color:var(--doux);font-size:13px;margin:0}
+form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.champ{display:flex;flex-direction:column;gap:4px}
+.champ.large{grid-column:1/-1}
+label{font-size:12px;font-weight:500}
+label .opt{color:var(--doux);font-weight:400}
+input,textarea{border:1px solid var(--trait);border-radius:6px;padding:8px 10px;background:var(--blanc);outline:none;width:100%;font-size:13px}
+input:focus,textarea:focus{border-color:var(--violet);box-shadow:0 0 0 3px #EDE5FC}
+textarea{min-height:64px;resize:vertical}
+.bouton{grid-column:1/-1;background:var(--violet);color:#fff;border:0;border-radius:99px;padding:11px 20px;font-weight:500;cursor:pointer}
+.bouton:hover{background:var(--violet-f)}
+.bouton:disabled{opacity:.5;cursor:not-allowed}
+.erreur{color:var(--erreur);font-size:13px;margin:0;grid-column:1/-1}
+.note{font-size:12px;color:var(--doux);margin:0;grid-column:1/-1}
+.etat{background:var(--blanc);border-radius:8px;padding:28px 24px;display:flex;align-items:center;gap:10px;color:var(--doux)}
+.rond{width:16px;height:16px;border:2px solid var(--lilas);border-top-color:var(--violet);border-radius:50%;animation:t 1s linear infinite}
+@keyframes t{to{transform:rotate(360deg)}}
+.ok{background:var(--blanc);border-radius:8px;padding:28px 24px;max-width:640px}
+.ok h2{font-size:20px;font-weight:500;margin:12px 0 8px}
+.ok ul{margin:0 0 12px;padding-left:18px}
+.ok li{margin:2px 0}
+.ok p{color:var(--doux);margin:0 0 8px}
+.barre{display:none}
+[hidden]{display:none!important}
+.pied{text-align:center;font-size:12px;color:var(--doux);margin-top:14px}
+.pied a{color:inherit}
+@media (max-width:900px){
+  .corps{grid-template-columns:minmax(0,1fr)}
+  .cote{position:static}
+}
+@media (max-width:560px){
+  .page{padding:12px 12px 88px}
+  .tete{padding:14px 16px}
+  .tete{gap:6px}
+  .tete img{width:64px}
+  .tete .bloc{min-width:100%}
+  .tete p{font-size:12.5px}
+  .infos{gap:2px 12px;font-size:12px;margin-top:6px}
+  h1{font-size:19px}
+  .panneau{padding:12px}
+  .grille{grid-template-columns:36px repeat(5,minmax(0,1fr));gap:3px}
+  .h{font-size:11px;padding-right:2px}
+  .c{height:36px;font-size:0}
+  .c::after{content:attr(data-court);font-size:11px}
+  .jt .js{font-size:10px}
+  .jt .jl{font-size:10px}
+  .jt .long{display:none}
+  form{grid-template-columns:1fr}
+  .legende .lien{margin-left:0}
+  .barre{display:flex;position:fixed;left:0;right:0;bottom:0;background:var(--blanc);border-top:1px solid var(--trait);padding:10px 12px;gap:10px;align-items:center;justify-content:space-between;z-index:5;font-size:13px}
+  .barre .bouton{grid-column:auto;padding:9px 16px}
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="tete">
+    <a href="https://www.purplelab.fr" aria-label="Purple Lab"><img src="/assets/logo.svg" alt="Purple Lab" width="92" height="41"></a>
+    <div class="bloc">
+      <span class="tag" id="tag">Espace privé</span>
+      <h1 id="titre">Planifier l'enquête sur site</h1>
+      <p id="description"></p>
+      <div class="infos" id="infos" hidden>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span id="i-lieu"></span></span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span id="i-pas"></span></span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3"/></svg>Heure de Paris</span>
+      </div>
+    </div>
+  </header>
+
+  <div id="etat" class="etat"><span class="rond"></span>Lecture de l'agenda…</div>
+
+  <div id="app" class="corps" hidden>
+    <section class="panneau" aria-label="Disponibilités">
+      <div class="semaines" id="semaines" role="tablist" aria-label="Semaines"></div>
+      <div class="nav">
+        <button class="fleche" id="prec" aria-label="Semaine précédente"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+        <strong id="titre-sem"></strong>
+        <button class="fleche" id="suiv" aria-label="Semaine suivante"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button>
+      </div>
+      <div class="grille" id="grille"></div>
+      <div class="legende">
+        <span><i class="l-libre"></i>Libre, cliquez pour choisir</span>
+        <span><i class="l-pris"></i>Indisponible</span>
+        <span><i class="l-choisi"></i>Votre choix</span>
+        <button class="lien" id="copier" type="button">Copier mes disponibilités de la semaine</button>
+      </div>
+      <div class="resume">
+        <h3>Disponibilités de Purple Lab cette semaine</h3>
+        <ul id="resume"></ul>
+      </div>
+    </section>
+
+    <aside class="cote">
+      <div class="panneau">
+        <h3><b>01</b> Vos créneaux <span id="compte"></span></h3>
+        <ul class="selection" id="selection"></ul>
+        <p class="rien" id="rien">Cliquez sur les cases violettes de la grille. Un clic sur un jour prend toute la journée.</p>
+      </div>
+      <div class="panneau" id="bloc-form">
+        <h3><b>02</b> Vos coordonnées</h3>
+        <form id="formulaire" novalidate>
+          <div class="champ"><label for="prenom">Prénom</label><input id="prenom" name="prenom" autocomplete="given-name" required></div>
+          <div class="champ"><label for="nom">Nom</label><input id="nom" name="nom" autocomplete="family-name" required></div>
+          <div class="champ large"><label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="email" required></div>
+          <div class="champ large"><label for="telephone">Téléphone <span class="opt">(facultatif)</span></label><input id="telephone" name="telephone" type="tel" autocomplete="tel"></div>
+          <div class="champ large"><label for="adresse">Adresse où nous venons</label><input id="adresse" name="adresse" autocomplete="street-address"></div>
+          <div class="champ large"><label for="message">Précisions <span class="opt">(salle, personnes à rencontrer…)</span></label><textarea id="message" name="message" maxlength="2000"></textarea></div>
+          <button class="bouton" id="envoyer" type="submit" disabled>Réserver ces créneaux</button>
+          <p class="erreur" id="form-erreur" hidden></p>
+          <p class="note">Vous recevez aussitôt une invitation par e-mail pour chaque rendez-vous.</p>
+        </form>
+      </div>
+    </aside>
+  </div>
+
+  <section id="fini" class="ok" hidden>
+    <span class="tag">Réservation confirmée</span>
+    <h2>C'est noté, merci.</h2>
+    <ul id="fini-liste"></ul>
+    <p id="fini-texte">Une invitation vient de vous être envoyée par e-mail pour chaque rendez-vous. Pour déplacer ou annuler, répondez simplement à ce mail.</p>
+    <p id="fini-avert" class="erreur" hidden></p>
+    <button class="lien" id="encore" type="button">Réserver d'autres créneaux</button>
+  </section>
+
+  <p class="pied">Page privée, à ne pas transférer · Purple Lab · <a href="mailto:contact@purplelab.fr">contact@purplelab.fr</a></p>
+</main>
+
+<div class="barre" id="barre"><span id="barre-texte">Aucun créneau choisi</span><button class="bouton" id="barre-bouton" type="button" disabled>Valider</button></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const cle = decodeURIComponent((location.pathname.match(/\/c\/([^/?#]+)/) || [])[1] || new URLSearchParams(location.search).get("cle") || "");
+  const fmtJour = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  const fmtCourt = new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+  const fmtJM = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" });
+  const SEM = ["lun", "mar", "mer", "jeu", "ven"];
+  const dateUTC = (iso) => new Date(iso + "T12:00:00Z");
+  const isoDe = (d) => d.toISOString().slice(0, 10);
+  const lundiDe = (iso) => { const d = dateUTC(iso); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return isoDe(d); };
+  const plus = (iso, n) => { const d = dateUTC(iso); d.setUTCDate(d.getUTCDate() + n); return isoDe(d); };
+  const maj = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  const hh = (h) => h.replace(/^0/, "").replace(":00", "h").replace(":", "h");
+
+  let client = null, jours = {}, semaines = [], semVue = null;
+  const choix = new Map(); // debut ISO -> {iso, heure, fin}
+
+  async function charger(garder) {
+    $("etat").hidden = false;
+    $("etat").innerHTML = '<span class="rond"></span>Lecture de l\'agenda…';
+    try {
+      const r = await fetch("/api/client/dispos", { cache: "no-store", headers: { "x-cle": cle } });
+      const d = await r.json().catch(() => ({}));
+      if (r.status === 404) return refuse();
+      if (!r.ok) throw new Error(d.erreur);
+      client = d.client; jours = d.jours || {};
+      // Les choix devenus indisponibles sont retirés.
+      const libres = new Set(Object.values(jours).flat().filter((c) => c.libre).map((c) => c.debut));
+      for (const k of [...choix.keys()]) if (!libres.has(k)) choix.delete(k);
+      remplirTete();
+      const dates = Object.keys(jours).sort();
+      semaines = [...new Set(dates.map(lundiDe))];
+      if (!garder || !semaines.includes(semVue)) {
+        const premiere = dates.find((j) => jours[j].some((c) => c.libre));
+        semVue = premiere ? lundiDe(premiere) : semaines[0];
+      }
+      $("etat").hidden = true;
+      $("app").hidden = false;
+      dessiner();
+    } catch (e) {
+      $("etat").innerHTML = 'L\'agenda est momentanément indisponible. Réessayez dans un instant ou écrivez à <a href="mailto:contact@purplelab.fr">contact@purplelab.fr</a>.';
+    }
+  }
+
+  function refuse() {
+    $("etat").innerHTML = "Ce lien n'est pas valide ou a expiré. Écrivez à <a href=\"mailto:contact@purplelab.fr\">contact@purplelab.fr</a> pour en recevoir un nouveau.";
+    $("titre").textContent = "Lien non valide";
+    $("tag").textContent = "Espace privé";
+  }
+
+  function remplirTete() {
+    document.title = `Réservation · ${client.nom} · Purple Lab`;
+    $("tag").textContent = `Espace privé · ${client.nom}`;
+    $("titre").textContent = client.titre;
+    $("description").textContent = client.description;
+    $("i-lieu").textContent = client.adresse ? `${client.lieu} · ${client.adresse}` : client.lieu;
+    $("i-pas").textContent = `Créneaux de ${client.pasMinutes >= 60 ? client.pasMinutes / 60 + " h" : client.pasMinutes + " min"}`;
+    $("infos").hidden = false;
+    if (client.adresse && !$("adresse").value) $("adresse").value = client.adresse;
+    const ct = client.contact;
+    if (ct && !$("email").value) { $("prenom").value = ct.prenom || ""; $("nom").value = ct.nom || ""; $("email").value = ct.email || ""; }
+  }
+
+  const libresDuJour = (iso) => (jours[iso] || []).filter((c) => c.libre);
+
+  function plagesTexte(iso) {
+    const out = [];
+    for (const c of libresDuJour(iso)) {
+      const der = out[out.length - 1];
+      if (der && der.fin === c.heure) der.fin = c.fin; else out.push({ debut: c.heure, fin: c.fin });
+    }
+    return out.map((p) => `${hh(p.debut)}–${hh(p.fin)}`).join(", ");
+  }
+
+  function dessiner() {
+    // Bandeau des semaines
+    $("semaines").innerHTML = "";
+    for (const s of semaines) {
+      const dj = [0, 1, 2, 3, 4].map((i) => plus(s, i));
+      const n = dj.reduce((a, j) => a + libresDuJour(j).length, 0);
+      const nChoix = [...choix.values()].filter((c) => lundiDe(c.iso) === s).length;
+      const b = document.createElement("button");
+      b.type = "button"; b.role = "tab";
+      b.className = "sem" + (s === semVue ? " actif" : "") + (n ? "" : " vide");
+      b.setAttribute("aria-selected", s === semVue);
+      const heures = (n * client.pasMinutes) / 60;
+      b.innerHTML = `<b>${fmtJM.format(dateUTC(s))} – ${fmtJM.format(dateUTC(plus(s, 4)))}</b>${nChoix ? `<span class="pastille">${nChoix}</span>` : ""}<small>${n ? `${String(heures).replace(".", ",")} h libres` : "complet"}</small>`;
+      b.onclick = () => { semVue = s; dessiner(); };
+      $("semaines").appendChild(b);
+    }
+    const actif = $("semaines").querySelector(".actif"), bande = $("semaines");
+    if (actif && (actif.offsetLeft < bande.scrollLeft || actif.offsetLeft + actif.offsetWidth > bande.scrollLeft + bande.clientWidth)) bande.scrollLeft = actif.offsetLeft - 8;
+
+    const idx = semaines.indexOf(semVue);
+    $("prec").disabled = idx <= 0;
+    $("suiv").disabled = idx >= semaines.length - 1;
+    $("titre-sem").textContent = `Semaine du ${fmtJour.format(dateUTC(semVue)).replace(/^\S+ /, "")}`;
+
+    // Grille
+    const g = $("grille");
+    g.innerHTML = "<span></span>";
+    const dj = [0, 1, 2, 3, 4].map((i) => plus(semVue, i));
+    const heures = [...new Set(dj.flatMap((j) => (jours[j] || []).map((c) => c.heure)))].sort();
+    if (!heures.length) heures.push(...Object.values(jours)[0].map((c) => c.heure));
+    dj.forEach((j, i) => {
+      const libres = libresDuJour(j);
+      const tous = libres.length && libres.every((c) => choix.has(c.debut));
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "jt"; b.disabled = !libres.length;
+      const d = dateUTC(j);
+      b.innerHTML = `<span class="js">${SEM[i]}</span><span class="jn">${d.getUTCDate()}</span><span class="jl">${!jours[j] ? "–" : !libres.length ? "complet" : tous ? "tout retirer" : '<span class="long">toute la </span>journée'}</span>`;
+      b.title = libres.length ? (tous ? "Retirer toute la journée" : "Choisir toute la journée") : "";
+      b.setAttribute("aria-label", fmtJour.format(d) + (libres.length ? (tous ? ", retirer toute la journée" : ", choisir toute la journée") : ", complet"));
+      b.onclick = () => { libres.forEach((c) => (tous ? choix.delete(c.debut) : choix.set(c.debut, { ...c, iso: j }))); majChoix(); };
+      g.appendChild(b);
+    });
+    for (const h of heures) {
+      g.insertAdjacentHTML("beforeend", `<span class="h">${hh(h)}</span>`);
+      dj.forEach((j) => {
+        const c = (jours[j] || []).find((x) => x.heure === h);
+        const b = document.createElement("button");
+        b.type = "button";
+        if (!c || !c.libre) {
+          b.className = "c pris"; b.disabled = true; b.textContent = "Indisponible"; b.dataset.court = "–";
+          b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(h)} : indisponible`);
+        } else {
+          const pris = choix.has(c.debut);
+          b.className = "c" + (pris ? " choisi" : "");
+          b.textContent = pris ? "✓ Choisi" : `${hh(c.heure)}–${hh(c.fin)}`;
+          b.dataset.court = pris ? "✓" : "libre";
+          b.setAttribute("aria-pressed", pris);
+          b.setAttribute("aria-label", `${fmtJour.format(dateUTC(j))}, ${hh(c.heure)} à ${hh(c.fin)} : libre`);
+          b.onclick = () => { pris ? choix.delete(c.debut) : choix.set(c.debut, { ...c, iso: j }); majChoix(); };
+        }
+        g.appendChild(b);
+      });
+    }
+
+    // Résumé texte de la semaine
+    $("resume").innerHTML = dj.map((j) => {
+      const t = plagesTexte(j);
+      return `<li class="${t ? "" : "non"}"><span>${maj(fmtCourt.format(dateUTC(j)))}</span><span>${t || "indisponible"}</span></li>`;
+    }).join("");
+    majCote();
+  }
+
+  function majChoix() { dessiner(); }
+
+  function blocsChoisis() {
+    const tri = [...choix.values()].sort((a, b) => a.debut.localeCompare(b.debut));
+    const blocs = [];
+    for (const c of tri) {
+      const der = blocs[blocs.length - 1];
+      if (der && der.iso === c.iso && der.fin === c.heure) { der.fin = c.fin; der.cles.push(c.debut); }
+      else blocs.push({ iso: c.iso, debut: c.heure, fin: c.fin, cles: [c.debut] });
+    }
+    return blocs;
+  }
+
+  function majCote() {
+    const blocs = blocsChoisis();
+    const n = choix.size;
+    $("compte").textContent = n ? `· ${(n * client.pasMinutes) / 60} h` : "";
+    $("rien").hidden = n > 0;
+    $("selection").innerHTML = "";
+    for (const b of blocs) {
+      const li = document.createElement("li");
+      li.innerHTML = `<span>${maj(fmtCourt.format(dateUTC(b.iso)))}, ${hh(b.debut)}–${hh(b.fin)}</span>`;
+      const x = document.createElement("button");
+      x.type = "button"; x.className = "x"; x.textContent = "×"; x.setAttribute("aria-label", "Retirer");
+      x.onclick = () => { b.cles.forEach((k) => choix.delete(k)); majChoix(); };
+      li.appendChild(x);
+      $("selection").appendChild(li);
+    }
+    const trop = client.maxCreneaux && n > client.maxCreneaux;
+    $("envoyer").disabled = !n || trop;
+    $("envoyer").textContent = n ? `Réserver ${blocs.length > 1 ? `ces ${blocs.length} rendez-vous` : "ce rendez-vous"}` : "Choisissez au moins un créneau";
+    const err = $("form-erreur");
+    if (trop) { err.textContent = `${client.maxCreneaux} créneaux au maximum par demande.`; err.hidden = false; }
+    $("barre-texte").textContent = n ? `${blocs.length} rendez-vous · ${(n * client.pasMinutes) / 60} h` : "Aucun créneau choisi";
+    $("barre-bouton").disabled = !n;
+  }
+
+  $("prec").onclick = () => { semVue = semaines[semaines.indexOf(semVue) - 1]; dessiner(); };
+  $("suiv").onclick = () => { semVue = semaines[semaines.indexOf(semVue) + 1]; dessiner(); };
+  $("barre-bouton").onclick = () => { $("bloc-form").scrollIntoView({ behavior: "smooth" }); setTimeout(() => $("prenom").focus({ preventScroll: true }), 400); };
+
+  $("copier").onclick = async () => {
+    const dj = [0, 1, 2, 3, 4].map((i) => plus(semVue, i));
+    const texte = `Disponibilités Purple Lab, ${$("titre-sem").textContent.toLowerCase()} :\n` + dj.map((j) => `- ${fmtJour.format(dateUTC(j))} : ${plagesTexte(j) || "indisponible"}`).join("\n");
+    try { await navigator.clipboard.writeText(texte); $("copier").textContent = "Copié ✓"; }
+    catch { $("copier").textContent = "Copie impossible"; }
+    setTimeout(() => ($("copier").textContent = "Copier mes disponibilités de la semaine"), 2000);
+  };
+
+  $("formulaire").addEventListener("input", () => ($("form-erreur").hidden = true));
+  $("formulaire").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = e.target, err = $("form-erreur");
+    err.hidden = true;
+    if (!choix.size) return;
+    if (!f.checkValidity()) {
+      const premier = f.querySelector(":invalid");
+      err.textContent = premier.type === "email" && premier.value ? "Adresse e-mail invalide." : "Merci de remplir votre prénom, votre nom et votre e-mail.";
+      err.hidden = false; premier.focus(); return;
+    }
+    const donnees = Object.fromEntries(new FormData(f));
+    donnees.creneaux = [...choix.keys()];
+    const btn = $("envoyer");
+    btn.disabled = true; btn.textContent = "Envoi…";
+    try {
+      const r = await fetch("/api/client/reserver", { method: "POST", headers: { "content-type": "application/json", "x-cle": cle }, body: JSON.stringify(donnees) });
+      const d = await r.json().catch(() => ({}));
+      if (r.status === 409) { await charger(true); err.textContent = d.erreur; err.hidden = false; return; }
+      if (r.status === 404) return refuse();
+      if (!r.ok || !d.ok) throw new Error(d.erreur || "Une erreur est survenue. Réessayez.");
+      $("fini-liste").innerHTML = d.rendezVous.map((x) => `<li>${maj(x.texte)}</li>`).join("");
+      if (d.avertissement) { $("fini-avert").textContent = d.avertissement; $("fini-avert").hidden = false; $("fini-texte").hidden = true; }
+      choix.clear();
+      $("app").hidden = true; $("barre").hidden = true; $("fini").hidden = false;
+      window.scrollTo({ top: 0 });
+    } catch (e2) {
+      err.textContent = e2.message; err.hidden = false;
+    } finally {
+      majCote();
+    }
+  });
+
+  $("encore").onclick = () => { $("fini").hidden = true; $("barre").hidden = false; $("fini-avert").hidden = true; $("fini-texte").hidden = false; charger(true); };
+
+  if (!cle) refuse(); else charger(false);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "_aide": "Un client = une page privée /c/<clé>. Ajouter un client : node outils/nouveau-client.mjs \"Nom du client\". Seule l'empreinte de la clé est ici, jamais la clé elle-même. Mettre \"actif\": false pour couper un lien.",
+  "clients": [
+    {
+      "id": "demo",
+      "testSeulement": true,
+      "cleSha256": "b47be6b1af30d8d84bb590e769056b3bbda3fcae816605cae05fa21bcb1e0be9",
+      "nom": "Société Exemple",
+      "adresse": "12 rue de l'Exemple, 75011 Paris",
+      "contact": { "prenom": "Camille", "nom": "Martin", "email": "camille.martin@exemple.fr" }
+    }
+  ]
+}
